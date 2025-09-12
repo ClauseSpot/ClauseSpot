@@ -9,7 +9,7 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
     <div>
       <nav className="navbar">
         <div className="navbar-logo">ClauseSpot</div>
-        <div className="navbar-links">
+        <div className="navbar-links">        
           <Link href="/home" className={pathname === "/home" ? "active" : ""}>Home</Link>
           <Link href="/search" className={pathname === "/search" ? "active" : ""}>Pesquisar</Link>
           <Link href="/" className={pathname === "/" ? "active" : ""}>Login</Link>
