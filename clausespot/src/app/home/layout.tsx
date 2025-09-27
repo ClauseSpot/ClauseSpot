@@ -13,6 +13,7 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
           <Link href="/home" className={pathname === "/home" ? "active" : ""}>Home</Link>
           <Link href="/home/search" className={pathname === "/home/search" ? "active" : ""}>Search</Link>
           <Link href="/home/uploadArquivos" className={pathname === "/home/uploadArquivos" ? "active" : ""}>Upload de Arquivos</Link>
+          <Link href="/home/gerenciaDeUsuario" className={pathname === "/home/gerenciaDeUsuario" ? "active" : ""}>Gerência de Usuário</Link> 
           <Link href="/" className={pathname === "/" ? "active" : ""}>Sair</Link>
         </div>
       </nav>
