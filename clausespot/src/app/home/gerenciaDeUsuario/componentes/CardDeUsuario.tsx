@@ -17,8 +17,8 @@ export const CardDeUsuario = ({ user, onEdit, onDelete }: CardDeUsuarioProps) =>
       <CardContent className="p-6">
         <div className="flex justify-between items-start mb-4">
           <h3 className="text-xl font-bold text-[#1A365D]">{user.nome}</h3>
-          <span className={`py-1 px-3 rounded-full text-xs font-semibold ${statusIsActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-            {user.status}
+              <span className={`py-1 px-3 rounded-full text-xs font-semibold ${statusIsActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+              {user.status}
           </span>
         </div>
         <div className="space-y-2 text-sm text-gray-600">
