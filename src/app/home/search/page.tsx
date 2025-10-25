@@ -17,7 +17,7 @@ export default function SearchPage() {
   const renderActiveSection = () => {
     switch (activeSection) {
       case 'search':
-        return <SearchSection 
+        return <SearchSection
           searchTerm={searchTerm} 
           setSearchTerm={setSearchTerm}
           isFilterOpen={isFilterOpen}
@@ -33,7 +33,7 @@ export default function SearchPage() {
   return (
     <div className="min-h-screen w-full">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex justify-center mb-12">
+        {/* <div className="flex justify-center mb-12">
           <Card className="bg-white rounded-2xl shadow-[0_8px_32px_0_rgba(26,54,93,0.12)] border-[1.5px] border-[#C69F66] max-w-2xl w-full">
             <CardContent className="px-8 py-10 text-center">
               <h1 className="text-4xl text-[#1A365D] mb-2">
@@ -44,7 +44,7 @@ export default function SearchPage() {
               </p>
             </CardContent>
           </Card>
-        </div>
+        </div> */}
 
         {/* Controle de navegação cards do Feature */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">

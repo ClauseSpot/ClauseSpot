@@ -1,37 +1,43 @@
 "use client"
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ModalAdicionarArquivo } from "./componentes/modalAdicionarArquivo";
 import { useEffect, useState } from "react";
+import { iArquivos, useQueryGetArquivos } from "@/app/hooks/useQueryGetArquivos";
+import { useRouter } from "next/navigation";
 
 
 export default function uploadArquivos() {
 
-    const [listaArquivos, setListaArquivos] = useState<any[]>([])
+    const router = useRouter()
 
-    useEffect(() => {
-        // console.log("Lista de Arquivos Main: ", listaArquivos)
-    })
+    const {
+        data: listaArquivos,
+        isLoading: loadingArquivos,
+        isSuccess: successArquivos
+    } = useQueryGetArquivos(1)
 
     return (
         <>
-            <ModalAdicionarArquivo                 
-                listaArquivos={listaArquivos}
-                setListaArquivos={setListaArquivos}
-            />
+            <ModalAdicionarArquivo />
 
             <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 mt-2 gap-x-5 gap-y-5">
-            {listaArquivos.map((arquivo: {base64: string, nome: string, link_download: string, data_registro: string}) => (
-                <Card key={arquivo.base64} className="shadow-md rounded-2xl border">
+            {successArquivos && listaArquivos.map((arquivo: iArquivos) => (
+                <Card key={arquivo.id} className="shadow-md rounded-2xl border">
                     <CardHeader>
-                        <CardTitle>{arquivo.nome}</CardTitle>
+                        <CardTitle>{arquivo.nome_original}</CardTitle>
                     </CardHeader>
 
                     <CardContent>
-                        {/* <p>Base64 do arquivo: {arquivo.base64}</p> */}
-                        <p>Data de Registro: {new Date(arquivo.data_registro).toLocaleDateString('pt-br')}</p>
+                        <p> Data de Registro: {new Date(arquivo.criado_em).toLocaleDateString('pt-br')} </p>
                     </CardContent>
+
+                    <CardFooter>
+                        <Button onClick={() => router.push(`/home/fileChat/${arquivo.id}`)}>
+                            Conversar com o Arquivo
+                        </Button>
+                    </CardFooter>
                 </Card>
             ))}
             </div>
