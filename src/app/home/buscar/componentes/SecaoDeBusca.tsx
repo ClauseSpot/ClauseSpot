@@ -25,7 +25,6 @@ export const SecaoDeBusca = ({ termoDeBusca, setTermoDeBusca, filtroAberto, togg
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                       <Input type="text" placeholder="Digite sua busca aqui..." value={termoDeBusca} onChange={(e) => setTermoDeBusca(e.target.value)} className="pl-10 pr-4 py-3 w-full border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500" onKeyPress={(e) => e.key === 'Enter' && handleBusca()} />
                     </div>
-
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button onClick={handleBusca} style={{ backgroundColor: '#2c5582' }} className="text-white hover:opacity-90" disabled={!termoDeBusca.trim()}><Search className="w-4 h-4 mr-2" />Buscar</Button>
               <Button onClick={handleLimpar} variant="outline" style={{ borderColor: '#2c5582' }} className="text-gray-700 hover:bg-gray-50" disabled={!termoDeBusca}><X className="w-4 h-4 mr-2" />Limpar</Button>

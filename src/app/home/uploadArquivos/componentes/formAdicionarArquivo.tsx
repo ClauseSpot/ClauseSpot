@@ -1,3 +1,5 @@
+"use client"
+
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -6,8 +8,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useMutationAddFiles } from "@/app/hooks/mutations/useMutateAddFiles";
 
 const addArquivoSchema = z.object({
   nome: z.string(),
@@ -21,16 +24,12 @@ interface AddArquivoFormProps {
   children: React.ReactNode;
   setPendent: (pendent: boolean) => void;
   closeDialog: () => void;
-  listaArquivos: any[];
-  setListaArquivos: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 export const FormAdicionarArquivo: React.FC<AddArquivoFormProps> = ({
   children,
   setPendent,
   closeDialog,
-  listaArquivos,
-  setListaArquivos
 }) => {
   const router = useRouter();
   const userId = 1;
@@ -41,38 +40,29 @@ export const FormAdicionarArquivo: React.FC<AddArquivoFormProps> = ({
 
   const { register, handleSubmit, control, setValue, formState: { errors } } = AddArquivoForm;
 
+  const { mutateAsync, isPending, isSuccess } = useMutationAddFiles()
+
   const handleFormSubmit = async (data: addArquivoFormType) => {
     try {
       const formData = new FormData();
       formData.append("usuario_id", String(userId));
-      formData.append("file", data.file); // arquivo enviado como multipart
+      formData.append("file", data.file);
       formData.append("nome", data.nome);
       formData.append("data_registro", data.data_registro);
 
-      console.log("Data: ", data)
-      console.log("FormData: ", formData)
+      mutateAsync(formData)
 
-      const response = await fetch("http://localhost:3001/api/upload", {
-        method: "POST",
-        body: formData
-      });
-
-      console.log("Response: ", response)
-
-      if (!response.ok) throw new Error("Erro ao enviar arquivo");
-
-      const result = await response.json();
-
-      console.log("Result: ", result)
-
-      toast.success("Arquivo enviado com sucesso!");
-      setListaArquivos(prev => [...prev, result]);
-      closeDialog();
     } catch (err) {
       console.error(err);
       toast.error("Erro ao salvar arquivo");
     }
   };
+
+  useEffect(() => {
+    if (isSuccess) {
+      closeDialog()
+    }
+  }, [isSuccess])
 
   return (
     <Form {...AddArquivoForm}>
@@ -134,7 +124,7 @@ export const FormAdicionarArquivo: React.FC<AddArquivoFormProps> = ({
         <Separator className="col col-span-2 mt-5 mb-5 " />
 
         <div className="col col-span-2 mt-10">
-          <Button type="submit">Salvar</Button>
+          <Button type="submit" disabled={isPending}> Salvar </Button>
         </div>
       </form>
     </Form>
