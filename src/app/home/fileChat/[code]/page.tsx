@@ -1,7 +1,9 @@
 "use client"
 
 import { iBodyMessage, useMutationSendMessage } from "@/app/hooks/mutations/useMutateSendMessage"
+import { useQueryGetArquivoById } from "@/app/hooks/useQueryGetArquivoById"
 import { iMensagem, useQueryGetHistoricoConversa } from "@/app/hooks/useQueryGetChatHistory"
+import { LoadingDots } from "@/components/LoadingDots"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardTitle } from "@/components/ui/card"
@@ -9,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { SendHorizonal } from "lucide-react"
+import { Ellipsis, SendHorizonal } from "lucide-react"
 import React, { useRef } from "react"
 import { useEffect } from "react"
 import { useForm } from "react-hook-form"
@@ -34,6 +36,10 @@ export default function FileChat({ params }: { params: Promise<{ code: string }>
 
     const { data: historico, isLoading: loadingHistorico, isSuccess: successHistorico } = useQueryGetHistoricoConversa(code)
 
+    const { data: arquivo, isLoading: loadingArquivos, isSuccess: successArquivo } = useQueryGetArquivoById(code)
+
+    console.log("Esse é o arquivo: ", arquivo)
+
     const { mutateAsync, isPending, isSuccess } = useMutationSendMessage()
 
     const scrollRef = useRef<HTMLDivElement>(null)
@@ -41,34 +47,45 @@ export default function FileChat({ params }: { params: Promise<{ code: string }>
     const sendMessage = (dataForm: sendMessageType) => {
         const data = {
             message: dataForm.message,
-            fileId: code,
-            conversa_id: 1
+            fileId: code
         }
         mutateAsync(data as iBodyMessage)
     }
 
+    function scrollToBottom() {
+        const scrollViewport = scrollRef.current?.querySelector("[data-radix-scroll-area-viewport]")
+        if (scrollViewport) {
+            scrollViewport.scrollTop = scrollViewport.scrollHeight
+        }
+    }
+
     useEffect(() => {
         if (isSuccess) {
-            sendMessageForm.reset({message: ''})
-            if (scrollRef.current) {
-                scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-            }
+            sendMessageForm.reset({ message: '' })
+            scrollToBottom()
         }
     }, [isSuccess])
 
     useEffect(() => {
-        if (historico && scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+        if (historico) {
+            scrollToBottom()
         }
     }, [historico])
+
+    useEffect(() => {
+        if (isPending) {
+            sendMessageForm.reset({ message: '' })
+            scrollToBottom()
+        }
+    }, [isPending])
 
     return (
         <div className="flex min-h-screen bg-slate-50 items-center justify-center">
             <Card className="h-[600px] w-full max-w-2xl grid grid-rows-[min-content_1fr_min-content]">
                 <div className="text-center p-4">
-                    <CardTitle className="text-lg font-semibold"> Chat com o Arquivo: {code} </CardTitle>
+                    <CardTitle className="text-lg font-semibold"> Análise do arquivo {arquivo?.nome_original} </CardTitle>
                     <CardDescription className="text-sm text-slate-600 mt-1">
-                        Nesse chat você pode conversar com o arquivo {code} para obter informações relevantes de maneira rápida e eficiente
+                        Faça alguma pergunta sobre o arquivo
                     </CardDescription>
                 </div>
                 <CardContent className="overflow-hidden">
@@ -82,6 +99,10 @@ export default function FileChat({ params }: { params: Promise<{ code: string }>
                             <div>{mensagem.conteudo}</div>
                         </div>
                         ))}
+                    {
+                        isPending &&
+                        <LoadingDots />
+                    }
                     </ScrollArea>
                 </CardContent>
                 <CardFooter>

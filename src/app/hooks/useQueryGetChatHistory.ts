@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 
 export interface iMensagem {
@@ -19,8 +19,11 @@ async function fetchHistorico (code: number) {
 }
 
 export function useQueryGetHistoricoConversa(code: number) {
+    const queryClient = useQueryClient()
+    queryClient.invalidateQueries({ queryKey: ['historicoChat'] })
+
     return useQuery({
-        queryKey: ['historicoChat'],
+        queryKey: ['historicoChat', code],
         queryFn: () => fetchHistorico(code)
     })
 }

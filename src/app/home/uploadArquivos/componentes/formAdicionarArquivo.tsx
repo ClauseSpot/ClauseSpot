@@ -14,8 +14,7 @@ import { useMutationAddFiles } from "@/app/hooks/mutations/useMutateAddFiles";
 
 const addArquivoSchema = z.object({
   nome: z.string(),
-  data_registro: z.string(),
-  file: z.instanceof(File) // agora esperamos o arquivo direto
+  file: z.instanceof(File)
 });
 
 type addArquivoFormType = z.infer<typeof addArquivoSchema>;
@@ -48,8 +47,6 @@ export const FormAdicionarArquivo: React.FC<AddArquivoFormProps> = ({
       formData.append("usuario_id", String(userId));
       formData.append("file", data.file);
       formData.append("nome", data.nome);
-      formData.append("data_registro", data.data_registro);
-
       mutateAsync(formData)
 
     } catch (err) {
@@ -78,20 +75,6 @@ export const FormAdicionarArquivo: React.FC<AddArquivoFormProps> = ({
               <FormLabel>Nome do Arquivo</FormLabel>
               <FormControl>
                 <Input {...field} type="text" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={AddArquivoForm.control}
-          name="data_registro"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Data de Registro</FormLabel>
-              <FormControl>
-                <Input {...field} type="date" />
               </FormControl>
               <FormMessage />
             </FormItem>

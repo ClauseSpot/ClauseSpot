@@ -4,8 +4,7 @@ import { toast } from 'sonner';
 
 export interface iBodyMessage {
     message: string,
-    fileId: number,
-    conversa_id: number
+    fileId: number
 }
 
 async function sendMessage(bodyMessage: iBodyMessage) {
