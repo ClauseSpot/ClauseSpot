@@ -14,7 +14,7 @@ export interface User {
   email: string;
   status: 'Ativo' | 'Inativo';
   criadoEm: string;
-  cargo: 'Gestor' | 'Curador' | 'Usuário' | null; // MODIFICADO: Adiciona cargo
+  cargo: 'Gestor' | 'Curador' | 'Usuário' | null;
 }
 
 const API_URL = 'http://localhost:3001/api';

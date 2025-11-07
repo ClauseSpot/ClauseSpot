@@ -6,7 +6,7 @@ import ReactQueryClientProvider from "@/components/ReactQueryClientProvider";
 import { useState, useEffect } from 'react'; 
 
 type UserInfo = {
-  cargo: 'Gerente' | 'Curador' | 'Usuário' | null;
+  cargo: 'Gestor' | 'Curador' | 'Usuário' | null;
 }
 
 export default function HomeLayout({ children }: { children: React.ReactNode }) {
@@ -76,7 +76,7 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
             {/* <Link href="/home/buscar" className={pathname === "/home/buscar" ? "active" : ""}>Buscar</Link> */}
             <Link href="/home/uploadArquivos" className={pathname === "/home/uploadArquivos" ? "active" : ""}>Arquivos</Link>
             <Link href="/home/leis" className={pathname === "/home/leis" ? "active" : ""}>Leis</Link>
-            {userRole === 'Gerente' && (
+            {userRole === 'Gestor' && (
               <Link href="/home/gerenciaDeUsuario" className={pathname === "/home/gerenciaDeUsuario" ? "active" : ""}>Usuários</Link> 
             )}
 
@@ -84,7 +84,7 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
           </div>
         </nav>
         <main className="main-content">
-          {pathname === "/home/gerenciaDeUsuario" && userRole !== 'Gerente' ? (
+          {pathname === "/home/gerenciaDeUsuario" && userRole !== 'Gestor' ? (
             <div className="text-center p-10">
               <h1 className="text-2xl font-bold text-red-600">Acesso Negado</h1>
               <p className="text-gray-700 mt-2">Você não tem permissão para acessar esta página.</p>
