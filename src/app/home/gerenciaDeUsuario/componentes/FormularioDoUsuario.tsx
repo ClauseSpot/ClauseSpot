@@ -14,6 +14,7 @@ const baseSchema = z.object({
   nome: z.string().min(3, { message: "Nome deve ter no mínimo 3 caracteres." }),
   email: z.string().email({ message: "Por favor, insira um e-mail válido." }),
   status: z.enum(['Ativo', 'Inativo']),
+  cargo: z.enum(['Gerente', 'Curador', 'Usuário']).nullable(), // MODIFICADO: Adiciona cargo ao schema
 });
 
 const createUserSchema = baseSchema.extend({
@@ -49,6 +50,7 @@ export const FormularioDoUsuario = ({ initialData, onSave, onCancel }: PropsForm
       email: '',
       status: 'Ativo',
       senha: '',
+      cargo: null,
     },
   });
 
@@ -57,6 +59,7 @@ export const FormularioDoUsuario = ({ initialData, onSave, onCancel }: PropsForm
       form.reset({
         ...initialData,
         senha: '',
+        cargo: initialData.cargo || null,
       });
     } else {
       form.reset({
@@ -65,6 +68,7 @@ export const FormularioDoUsuario = ({ initialData, onSave, onCancel }: PropsForm
         email: '',
         status: 'Ativo',
         senha: '',
+        cargo: null,
       });
     }
   }, [initialData, form.reset]);
@@ -130,6 +134,28 @@ export const FormularioDoUsuario = ({ initialData, onSave, onCancel }: PropsForm
                   <SelectContent>
                     <SelectItem value="Ativo">Ativo</SelectItem>
                     <SelectItem value="Inativo">Inativo</SelectItem>
+                  </SelectContent>
+                </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="cargo"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Cargo</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o cargo" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Gerente">Gerente</SelectItem>
+                    <SelectItem value="Curador">Curador</SelectItem>
+                    <SelectItem value="Usuário">Usuário</SelectItem>
                   </SelectContent>
                 </Select>
               <FormMessage />

@@ -13,7 +13,8 @@ export interface User {
   nome: string;
   email: string;
   status: 'Ativo' | 'Inativo';
-  criado_em: string;
+  criadoEm: string;
+  cargo: 'Gerente' | 'Curador' | 'Usuário' | null; // MODIFICADO: Adiciona cargo
 }
 
 const API_URL = 'http://localhost:3001/api';

@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Edit, Trash2 } from 'lucide-react';
-import type { User } from '../page'; // Importando o tipo User da página principal
+import type { User } from '../page';
 
 interface CardDeUsuarioProps {
   user: User;
@@ -10,6 +10,7 @@ interface CardDeUsuarioProps {
 }
 
 export const CardDeUsuario = ({ user, onEdit, onDelete }: CardDeUsuarioProps) => {
+  
   const statusIsActive = user.status === 'Ativo';
   
   return (
@@ -17,9 +18,9 @@ export const CardDeUsuario = ({ user, onEdit, onDelete }: CardDeUsuarioProps) =>
       <CardContent className="p-6">
         <div className="flex justify-between items-start mb-4">
           <h3 className="text-xl font-bold text-[#1A365D]">{user.nome}</h3>
-              {/* <span className={`py-1 px-3 rounded-full text-xs font-semibold ${statusIsActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+               <span className={`py-1 px-3 rounded-full text-xs font-semibold ${statusIsActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
               {user.status} 
-          </span> */}
+          </span>
         </div>
         <div className="space-y-2 text-sm text-gray-600">
           <p>
@@ -29,11 +30,12 @@ export const CardDeUsuario = ({ user, onEdit, onDelete }: CardDeUsuarioProps) =>
             <span className="font-semibold">E-mail:</span> {user.email}
           </p>
           <p>
-            <span className="font-semibold">Criado em:</span> {new Date(user.criado_em).toLocaleDateString('pt-BR', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-            })}
+            <span className="font-semibold">Cargo:</span> {user.cargo || 'Não definido'}
+          </p>
+          <p>
+            <span className="font-semibold">Criado em:</span> {
+            new Date(user.criadoEm).toLocaleDateString()
+            }
           </p>
         </div>
       </CardContent>
