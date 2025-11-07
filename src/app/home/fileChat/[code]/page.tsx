@@ -47,7 +47,8 @@ export default function FileChat({ params }: { params: Promise<{ code: string }>
     const sendMessage = (dataForm: sendMessageType) => {
         const data = {
             message: dataForm.message,
-            fileId: code
+            fileId: code,
+            usuarioId: 1,
         }
         mutateAsync(data as iBodyMessage)
     }
