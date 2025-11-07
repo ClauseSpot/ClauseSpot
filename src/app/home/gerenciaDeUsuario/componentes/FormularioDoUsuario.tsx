@@ -14,7 +14,7 @@ const baseSchema = z.object({
   nome: z.string().min(3, { message: "Nome deve ter no mínimo 3 caracteres." }),
   email: z.string().email({ message: "Por favor, insira um e-mail válido." }),
   status: z.enum(['Ativo', 'Inativo']),
-  cargo: z.enum(['Gerente', 'Curador', 'Usuário']).nullable(), // MODIFICADO: Adiciona cargo ao schema
+  cargo: z.enum(['Gestor', 'Curador', 'Usuário']).nullable(), // MODIFICADO: Adiciona cargo ao schema
 });
 
 const createUserSchema = baseSchema.extend({
@@ -153,7 +153,7 @@ export const FormularioDoUsuario = ({ initialData, onSave, onCancel }: PropsForm
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="Gerente">Gerente</SelectItem>
+                    <SelectItem value="Gestor">Gestor</SelectItem>
                     <SelectItem value="Curador">Curador</SelectItem>
                     <SelectItem value="Usuário">Usuário</SelectItem>
                   </SelectContent>

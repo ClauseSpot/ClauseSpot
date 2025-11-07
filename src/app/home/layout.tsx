@@ -3,12 +3,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import "./layout.css";
 import ReactQueryClientProvider from "@/components/ReactQueryClientProvider";
-import { useState, useEffect } from 'react'; // MODIFICADO: Importa hooks
-import {Toaster, toast} from 'sonner';
+import { useState, useEffect } from 'react'; 
 
 type UserInfo = {
   cargo: 'Gerente' | 'Curador' | 'Usuário' | null;
-  // Outros campos do usuário podem ser adicionados aqui se necessário
 }
 
 export default function HomeLayout({ children }: { children: React.ReactNode }) {
@@ -19,64 +17,36 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // Garante que o código só rode no navegador (onde o localStorage existe)
     if (typeof window !== 'undefined') {
       const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
 
-      // 1. Se NÃO estiver autenticado, manda de volta para a página de login
       if (!isAuthenticated) {
         router.push('/');
-        return; // Para a execução
+        return;
       }
 
-      // 2. Se ESTIVER autenticado, carrega os dados do usuário
       const userInfoString = localStorage.getItem('userInfo');
       if (userInfoString) {
         try {
           const userInfo: UserInfo = JSON.parse(userInfoString);
           setUserRole(userInfo.cargo);
-
-          const toastShown = sessionStorage.getItem('welcomeToastShown');
-          if (!toastShown) {
-            let welcomeMessage = "Login realizado com sucesso!";
-            switch(userInfo.cargo) {
-              case 'Gerente':
-                welcomeMessage = `Bem-vindo, ${userInfo.cargo}!`;
-                break;
-              case 'Curador':
-                welcomeMessage = `Bem-vindo, ${userInfo.cargo}!`;
-                break;
-              case 'Usuário':
-                welcomeMessage = `Bem-vindo, ${userInfo.cargo}!`;
-                break;
-            }
-            // Exibe o toast
-            toast.success("Login bem-sucedido!", {
-              description: welcomeMessage,
-              duration: 4000, // 4 segundos
-            });
-            // Marca que o toast foi exibido nesta sessão
-            sessionStorage.setItem('welcomeToastShown', 'true');
-          }
         } catch (e) {
           console.error("Falha ao parsear userInfo do localStorage", e);
           setUserRole(null);
         }
       }
-      // 3. Termina a verificação e permite a renderização da página
       setIsCheckingAuth(false);
     }
   }, [router]);
 
 
   const handleLogout = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
+    e.preventDefault(); // Previne a navegação padrão do link
     if (typeof window !== 'undefined') {
       localStorage.removeItem('isAuthenticated');
       localStorage.removeItem('userInfo');
-      sessionStorage.removeItem('welcomeToastShown'); 
     }
-    router.push('/'); 
+    router.push('/'); // Redireciona para o login
   };
 
   if (isCheckingAuth) {
@@ -98,7 +68,6 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <ReactQueryClientProvider>
-      <Toaster position="top-right" richColors />
       <div>
         <nav className="navbar">
           <div className="navbar-logo">ClauseSpot</div>
