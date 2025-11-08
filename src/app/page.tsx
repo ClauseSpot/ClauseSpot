@@ -1,5 +1,7 @@
 "use client";
+
 import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast"; // ✅ Importa o sistema global de toast
 
 export default function LoginPage() {
   const [error, setError] = useState("");
@@ -7,68 +9,93 @@ export default function LoginPage() {
   const [authCode, setAuthCode] = useState("");
   const [authError, setAuthError] = useState("");
   const [userInfo, setUserInfo] = useState<any>(null);
+  const { toast } = useToast(); // ✅ Inicializa o toast
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const email = (form.elements.namedItem("email") as HTMLInputElement).value;
     const password = (form.elements.namedItem("password") as HTMLInputElement).value;
-    
+
     try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
-      
+
       if (data.valid === true) {
         setError("");
         setUserInfo(data.user);
         setShowAuthModal(true);
+
+        toast({
+          title: "🔐 Verificação necessária",
+          description: "Um código foi enviado para seu e-mail.",
+          duration: 3500,
+        });
       } else {
-        console.log("Validation failed:", data.message);
         setError(data.message || "Email ou senha inválidos");
+        toast({
+          variant: "destructive",
+          title: "❌ Credenciais incorretas",
+          description: "Verifique seu email e senha e tente novamente.",
+          duration: 4000,
+        });
       }
     } catch (error) {
-      setError("Erro ao tentar fazer login. Tente novamente.");
+      toast({
+        variant: "destructive",
+        title: "⚠️ Erro de conexão",
+        description: "Não foi possível realizar o login. Tente novamente.",
+      });
     }
   }
 
-  function handleAuthSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleAuthSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    (async () => {
-      if (!userInfo || !userInfo.email) {
-        setAuthError("Email do usuário não disponível para verificação");
-        return;
-      }
+    if (!userInfo?.email) {
+      setAuthError("Email do usuário não disponível para verificação");
+      return;
+    }
 
-      try {
-        const res = await fetch('/api/verify2fa', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: userInfo.email, code: authCode }),
+    try {
+      const res = await fetch("/api/verify2fa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: userInfo.email, code: authCode }),
+      });
+
+      const result = await res.json();
+
+      if (result?.success === true) {
+        localStorage.setItem("userInfo", JSON.stringify(userInfo));
+        localStorage.setItem("isAuthenticated", "true");
+
+        toast({
+          title: "✅ Login efetuado com sucesso!",
+          description: `Bem-vindo(a), ${userInfo.nome || "usuário"}!`,
+          duration: 3500,
         });
 
-        const result = await res.json();
-
-        if (result && result.success === true) {
-          localStorage.setItem('userInfo', JSON.stringify(userInfo));
-          localStorage.setItem('isAuthenticated', 'true');
-          window.location.href = '/home';
-        } else {
-          setAuthError(result?.message || 'Código de autenticação inválido');
-        }
-      } catch (err) {
-        setAuthError('Erro ao verificar código. Tente novamente.');
+        window.location.href = "/home";
+      } else {
+        setAuthError(result?.message || "Código inválido");
+        toast({
+          variant: "destructive",
+          title: "❌ Código incorreto",
+          description: "Verifique o código de autenticação e tente novamente.",
+        });
       }
-    })();
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "⚠️ Erro inesperado",
+        description: "Falha ao verificar o código. Tente novamente.",
+      });
+    }
   }
 
   function handleCancelAuth() {
@@ -81,6 +108,8 @@ export default function LoginPage() {
   return (
     <div className="login-container">
       <div className="login-app-title">ClauseSpot</div>
+
+      {/* Formulário de login */}
       <form className="login-form" onSubmit={handleSubmit}>
         <h2>Login</h2>
         {error && <div className="login-error">{error}</div>}
@@ -89,6 +118,7 @@ export default function LoginPage() {
         <button type="submit">Validar usuário</button>
       </form>
 
+      {/* Modal de autenticação */}
       {showAuthModal && (
         <div className="modal-overlay">
           <div className="modal-content">

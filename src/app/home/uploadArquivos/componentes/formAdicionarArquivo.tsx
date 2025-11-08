@@ -1,88 +1,111 @@
-"use client"
+"use client";
 
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useEffect } from "react";
+import { useToast } from "@/components/ui/use-toast"; // ✅ Importa o hook correto
 import { useMutationAddFiles } from "@/app/hooks/mutations/useMutateAddFiles";
 
 const addArquivoSchema = z.object({
-  nome: z.string(),
-  file: z.instanceof(File)
+  nome: z.string().min(1, "O nome do arquivo é obrigatório."),
+  file: z.instanceof(File, { message: "Selecione um arquivo válido." }),
 });
 
-type addArquivoFormType = z.infer<typeof addArquivoSchema>;
+type AddArquivoFormType = z.infer<typeof addArquivoSchema>;
 
 interface AddArquivoFormProps {
-  children: React.ReactNode;
   setPendent: (pendent: boolean) => void;
   closeDialog: () => void;
 }
 
 export const FormAdicionarArquivo: React.FC<AddArquivoFormProps> = ({
-  children,
   setPendent,
   closeDialog,
 }) => {
   const router = useRouter();
-  const userId = 1;
+  const { toast } = useToast(); // ✅ Inicializa o sistema global de toast
+  const userId = 1; // Pode vir do contexto futuramente
 
-  const AddArquivoForm = useForm<addArquivoFormType>({
-    resolver: zodResolver(addArquivoSchema)
+  const form = useForm<AddArquivoFormType>({
+    resolver: zodResolver(addArquivoSchema),
   });
 
-  const { register, handleSubmit, control, setValue, formState: { errors } } = AddArquivoForm;
+  const { mutateAsync, isPending, isSuccess } = useMutationAddFiles();
 
-  const { mutateAsync, isPending, isSuccess } = useMutationAddFiles()
-
-  const handleFormSubmit = async (data: addArquivoFormType) => {
+  const handleFormSubmit = async (data: AddArquivoFormType) => {
     try {
       const formData = new FormData();
       formData.append("usuario_id", String(userId));
       formData.append("file", data.file);
       formData.append("nome", data.nome);
-      mutateAsync(formData)
 
+      await mutateAsync(formData);
+
+      toast({
+        title: "📁 Arquivo enviado com sucesso!",
+        description: `O arquivo "${data.nome}" foi salvo e está disponível.`,
+      });
+
+      form.reset();
+      closeDialog();
+      router.refresh(); // Atualiza a tela automaticamente
     } catch (err) {
       console.error(err);
-      toast.error("Erro ao salvar arquivo");
+      toast({
+        variant: "destructive",
+        title: "❌ Erro ao enviar arquivo",
+        description: "Não foi possível salvar o arquivo. Tente novamente.",
+      });
     }
   };
 
   useEffect(() => {
     if (isSuccess) {
-      closeDialog()
+      setPendent(false);
     }
-  }, [isSuccess])
+  }, [isSuccess]);
 
   return (
-    <Form {...AddArquivoForm}>
+    <Form {...form}>
       <form
-        onSubmit={AddArquivoForm.handleSubmit(handleFormSubmit)}
+        onSubmit={form.handleSubmit(handleFormSubmit)}
         className="grid grid-cols-2 max-h-[80vh] overflow-y-auto gap-x-4 gap-y-2 p-4"
       >
+        {/* Nome do arquivo */}
         <FormField
-          control={AddArquivoForm.control}
+          control={form.control}
           name="nome"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Nome do Arquivo</FormLabel>
               <FormControl>
-                <Input {...field} type="text" />
+                <Input
+                  {...field}
+                  type="text"
+                  placeholder="Digite o nome do arquivo"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
+        {/* Upload de arquivo */}
         <FormField
-          control={AddArquivoForm.control}
+          control={form.control}
           name="file"
           render={({ field }) => (
             <FormItem>
@@ -93,9 +116,7 @@ export const FormAdicionarArquivo: React.FC<AddArquivoFormProps> = ({
                   accept="application/pdf"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (file) {
-                      field.onChange(file);
-                    }
+                    if (file) field.onChange(file);
                   }}
                 />
               </FormControl>
@@ -104,10 +125,13 @@ export const FormAdicionarArquivo: React.FC<AddArquivoFormProps> = ({
           )}
         />
 
-        <Separator className="col col-span-2 mt-5 mb-5 " />
+        <Separator className="col-span-2 mt-5 mb-5" />
 
-        <div className="col col-span-2 mt-10">
-          <Button type="submit" disabled={isPending}> Salvar </Button>
+        {/* Botão de envio */}
+        <div className="col-span-2 flex justify-end">
+          <Button type="submit" disabled={isPending}>
+            {isPending ? "Enviando..." : "Salvar"}
+          </Button>
         </div>
       </form>
     </Form>

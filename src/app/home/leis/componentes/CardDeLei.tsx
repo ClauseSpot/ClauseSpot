@@ -1,7 +1,18 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Calendar, FileText, AlertCircle, CheckCircle, Plus, Ban, X } from 'lucide-react';
-import type { AtualizacaoLei } from '../page';
+"use client";
+
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Calendar,
+  FileText,
+  AlertCircle,
+  CheckCircle,
+  Plus,
+  Ban,
+  X,
+} from "lucide-react";
+import type { AtualizacaoLei } from "../page";
+import { useToast } from "@/components/ui/use-toast"; // ✅ Importa o sistema global de notificações
 
 interface CardDeLeiProps {
   atualizacao: AtualizacaoLei;
@@ -10,38 +21,71 @@ interface CardDeLeiProps {
   onRemoverAcao: (id: number) => void;
 }
 
-export const CardDeLei = ({ atualizacao, onAdicionar, onRevogar, onRemoverAcao }: CardDeLeiProps) => {
+export const CardDeLei = ({
+  atualizacao,
+  onAdicionar,
+  onRevogar,
+  onRemoverAcao,
+}: CardDeLeiProps) => {
+  const { toast } = useToast(); // ✅ Inicializa o toast
+
   const getTipoAlteracaoColor = (tipo: string) => {
     switch (tipo) {
-      case 'Modificação':
-        return 'bg-blue-100 text-blue-700 border-blue-300';
-      case 'Inclusão':
-        return 'bg-green-100 text-green-700 border-green-300';
-      case 'Revogação':
-        return 'bg-red-100 text-red-700 border-red-300';
+      case "Modificação":
+        return "bg-blue-100 text-blue-700 border-blue-300";
+      case "Inclusão":
+        return "bg-green-100 text-green-700 border-green-300";
+      case "Revogação":
+        return "bg-red-100 text-red-700 border-red-300";
       default:
-        return 'bg-gray-100 text-gray-700 border-gray-300';
+        return "bg-gray-100 text-gray-700 border-gray-300";
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Nova':
-        return 'bg-yellow-100 text-yellow-700';
-      case 'Revisada':
-        return 'bg-purple-100 text-purple-700';
-      case 'Vigente':
-        return 'bg-green-100 text-green-700';
+      case "Nova":
+        return "bg-yellow-100 text-yellow-700";
+      case "Revisada":
+        return "bg-purple-100 text-purple-700";
+      case "Vigente":
+        return "bg-green-100 text-green-700";
       default:
-        return 'bg-gray-100 text-gray-700';
+        return "bg-gray-100 text-gray-700";
     }
   };
 
   const formatarData = (data: string) => {
-    return new Date(data).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
+    return new Date(data).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  // ✅ Toasts personalizados para cada ação
+  const handleAdicionar = (id: number) => {
+    onAdicionar(id);
+    toast({
+      title: "✅ Lei adicionada com sucesso!",
+      description: `A lei "${atualizacao.lei}" foi marcada como adicionada.`,
+    });
+  };
+
+  const handleRevogar = (id: number) => {
+    onRevogar(id);
+    toast({
+      variant: "destructive",
+      title: "⚠️ Lei revogada",
+      description: `A lei "${atualizacao.lei}" foi marcada como revogada.`,
+    });
+  };
+
+  const handleRemover = (id: number) => {
+    onRemoverAcao(id);
+    toast({
+      title: "↩️ Ação removida",
+      description: `A marcação da lei "${atualizacao.lei}" foi removida.`,
     });
   };
 
@@ -57,23 +101,30 @@ export const CardDeLei = ({ atualizacao, onAdicionar, onRevogar, onRemoverAcao }
                   {atualizacao.lei}
                 </h3>
               </div>
-              <span className={`py-1 px-3 rounded-full text-xs font-semibold ${getStatusColor(atualizacao.status)}`}>
+              <span
+                className={`py-1 px-3 rounded-full text-xs font-semibold ${getStatusColor(
+                  atualizacao.status
+                )}`}
+              >
                 {atualizacao.status}
               </span>
+
               {atualizacao.acaoUsuario && (
-                <span className={`py-1 px-3 rounded-full text-xs font-semibold flex items-center gap-1 ${
-                  atualizacao.acaoUsuario === 'Adicionada' 
-                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-300' 
-                    : 'bg-rose-100 text-rose-700 border border-rose-300'
-                }`}>
-                  {atualizacao.acaoUsuario === 'Adicionada' ? (
+                <span
+                  className={`py-1 px-3 rounded-full text-xs font-semibold flex items-center gap-1 ${
+                    atualizacao.acaoUsuario === "Adicionada"
+                      ? "bg-emerald-100 text-emerald-700 border border-emerald-300"
+                      : "bg-rose-100 text-rose-700 border border-rose-300"
+                  }`}
+                >
+                  {atualizacao.acaoUsuario === "Adicionada" ? (
                     <CheckCircle className="h-3 w-3" />
                   ) : (
                     <Ban className="h-3 w-3" />
                   )}
                   {atualizacao.acaoUsuario}
                   <button
-                    onClick={() => onRemoverAcao(atualizacao.id)}
+                    onClick={() => handleRemover(atualizacao.id)}
                     className="ml-1 hover:opacity-70 transition-opacity"
                     title="Remover ação"
                   >
@@ -105,28 +156,41 @@ export const CardDeLei = ({ atualizacao, onAdicionar, onRevogar, onRemoverAcao }
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Calendar className="h-4 w-4" />
               <span>
-                Publicado em: <span className="font-semibold">{formatarData(atualizacao.dataPublicacao)}</span>
+                Publicado em:{" "}
+                <span className="font-semibold">
+                  {formatarData(atualizacao.dataPublicacao)}
+                </span>
               </span>
             </div>
           </div>
 
           <div className="lg:w-48 flex lg:flex-col items-center lg:items-end gap-3">
-            <div className={`py-2 px-4 rounded-lg border-2 text-center ${getTipoAlteracaoColor(atualizacao.tipoAlteracao)}`}>
+            <div
+              className={`py-2 px-4 rounded-lg border-2 text-center ${getTipoAlteracaoColor(
+                atualizacao.tipoAlteracao
+              )}`}
+            >
               <div className="flex items-center justify-center gap-2 mb-1">
-                {atualizacao.tipoAlteracao === 'Inclusão' && <CheckCircle className="h-4 w-4" />}
-                {atualizacao.tipoAlteracao === 'Revogação' && <AlertCircle className="h-4 w-4" />}
-                {atualizacao.tipoAlteracao === 'Modificação' && <FileText className="h-4 w-4" />}
+                {atualizacao.tipoAlteracao === "Inclusão" && (
+                  <CheckCircle className="h-4 w-4" />
+                )}
+                {atualizacao.tipoAlteracao === "Revogação" && (
+                  <AlertCircle className="h-4 w-4" />
+                )}
+                {atualizacao.tipoAlteracao === "Modificação" && (
+                  <FileText className="h-4 w-4" />
+                )}
               </div>
               <p className="text-xs font-bold uppercase tracking-wide">
                 {atualizacao.tipoAlteracao}
               </p>
             </div>
 
-            {/* Botões de Ação */}
+            {/* ✅ Botões de ação com feedback visual */}
             {!atualizacao.acaoUsuario && (
               <div className="flex lg:flex-col gap-2 w-full lg:w-auto">
                 <Button
-                  onClick={() => onAdicionar(atualizacao.id)}
+                  onClick={() => handleAdicionar(atualizacao.id)}
                   className="bg-[#2B6CB0] hover:bg-[#1A365D] text-white text-xs py-2 px-4 flex items-center gap-2 transition-colors"
                   size="sm"
                 >
@@ -134,7 +198,7 @@ export const CardDeLei = ({ atualizacao, onAdicionar, onRevogar, onRemoverAcao }
                   Adicionar
                 </Button>
                 <Button
-                  onClick={() => onRevogar(atualizacao.id)}
+                  onClick={() => handleRevogar(atualizacao.id)}
                   variant="outline"
                   className="border-[#C69F66] text-[#C69F66] hover:bg-[#C69F66] hover:text-white text-xs py-2 px-4 flex items-center gap-2 transition-colors"
                   size="sm"
