@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { CardDeLei } from './componentes/CardDeLei';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -7,7 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
+import { useQueryGetLeis } from '@/app/hooks/useQueryGetLeis';
 
 export interface AtualizacaoLei {
   id: number;
@@ -19,12 +20,21 @@ export interface AtualizacaoLei {
   dataPublicacao: string;
   status: 'Nova' | 'Revisada' | 'Vigente';
   acaoUsuario?: 'Adicionada' | 'Revogada';
+  // Campos da API
+  uri?: string;
+  siglaTipo?: string;
+  codTipo?: number;
+  numero?: number;
+  ano?: number;
 }
 
 export default function PaginaDeLeis() {
   const anoAtual = new Date().getFullYear();
   const [anoSelecionado, setAnoSelecionado] = useState<number>(anoAtual);
   const [modalAberto, setModalAberto] = useState(false);
+  
+  // Buscar dados da API
+  const { data: leisAPI, isLoading, isError } = useQueryGetLeis();
   
   const [novaLei, setNovaLei] = useState({
     lei: '',
@@ -36,220 +46,98 @@ export default function PaginaDeLeis() {
     status: 'Nova' as 'Nova' | 'Revisada' | 'Vigente'
   });
   
-  const [atualizacoes, setAtualizacoes] = useState<AtualizacaoLei[]>([
-    {
-      id: 7,
-      lei: "Lei nº 13.709/2018 (LGPD)",
-      inciso: "Art. 18, Inciso III",
-      tipoAlteracao: "Modificação",
-      descricaoAlteracao: "Ampliação dos direitos do titular de dados quanto à portabilidade de dados pessoais, incluindo novas modalidades de transferência entre controladores.",
-      dataPublicacao: "2025-10-15",
-      status: "Nova"
-    },
-    {
-      id: 8,
-      lei: "Lei nº 14.133/2021 (Nova Lei de Licitações)",
-      inciso: "Art. 92",
-      clausula: "§ 3º",
-      tipoAlteracao: "Inclusão",
-      descricaoAlteracao: "Inclusão de novos requisitos para contratos administrativos relacionados à sustentabilidade ambiental e práticas ESG nas contratações públicas.",
-      dataPublicacao: "2025-09-22",
-      status: "Vigente"
-    },
-    {
-      id: 9,
-      lei: "Código Civil - Lei nº 10.406/2002",
-      inciso: "Art. 425",
-      tipoAlteracao: "Modificação",
-      descricaoAlteracao: "Atualização das regras sobre contratos eletrônicos e assinaturas digitais, estabelecendo novos parâmetros de validade jurídica.",
-      dataPublicacao: "2025-08-10",
-      status: "Vigente"
-    },
-    {
-      id: 10,
-      lei: "Lei nº 8.078/1990 (CDC)",
-      inciso: "Art. 49",
-      tipoAlteracao: "Modificação",
-      descricaoAlteracao: "Extensão do direito de arrependimento em compras online, aumentando o prazo de 7 para 14 dias em determinadas categorias de produtos.",
-      dataPublicacao: "2025-07-18",
-      status: "Vigente"
-    },
-    {
-      id: 11,
-      lei: "Lei nº 13.874/2019 (Lei da Liberdade Econômica)",
-      inciso: "Art. 5º",
-      clausula: "Inciso II",
-      tipoAlteracao: "Inclusão",
-      descricaoAlteracao: "Inclusão de dispositivos sobre contratos inteligentes (smart contracts) e sua validade jurídica no âmbito empresarial.",
-      dataPublicacao: "2025-06-05",
-      status: "Nova"
-    },
-    {
-      id: 12,
-      lei: "Lei nº 14.457/2022 (Programa Emprega + Mulheres)",
-      inciso: "Art. 12",
-      tipoAlteracao: "Modificação",
-      descricaoAlteracao: "Alteração nas cláusulas contratuais trabalhistas relacionadas à flexibilização do trabalho remoto para mães com filhos menores de 6 anos.",
-      dataPublicacao: "2025-05-12",
-      status: "Vigente"
-    },
-    {
-      id: 13,
-      lei: "Lei Complementar nº 123/2006 (Simples Nacional)",
-      inciso: "Art. 3º",
-      tipoAlteracao: "Modificação",
-      descricaoAlteracao: "Atualização dos limites de faturamento para enquadramento de empresas no Simples Nacional, com impacto em contratos empresariais.",
-      dataPublicacao: "2025-04-20",
-      status: "Vigente"
-    },
-    {
-      id: 14,
-      lei: "Lei nº 9.279/1996 (Propriedade Industrial)",
-      inciso: "Art. 88",
-      tipoAlteracao: "Inclusão",
-      descricaoAlteracao: "Inclusão de regras sobre licenciamento de patentes em contratos de tecnologia e inovação, com foco em inteligência artificial.",
-      dataPublicacao: "2025-03-15",
-      status: "Nova"
-    },
-    {
-      id: 15,
-      lei: "Código de Processo Civil - Lei nº 13.105/2015",
-      inciso: "Art. 515",
-      clausula: "§ 5º",
-      tipoAlteracao: "Inclusão",
-      descricaoAlteracao: "Inclusão de procedimentos para execução de sentenças em contratos internacionais com cláusula arbitral.",
-      dataPublicacao: "2025-02-28",
-      status: "Vigente"
-    },
-    {
-      id: 16,
-      lei: "Lei nº 12.965/2014 (Marco Civil da Internet)",
-      inciso: "Art. 7º, Inciso XII",
-      tipoAlteracao: "Modificação",
-      descricaoAlteracao: "Modificação das regras de proteção de dados em contratos de prestação de serviços digitais, com adequação às normas internacionais.",
-      dataPublicacao: "2025-01-22",
-      status: "Vigente"
-    },
-    
-    {
-      id: 1,
-      lei: "Lei nº 13.709/2018 (LGPD)",
-      inciso: "Art. 7º, Inciso IX",
-      tipoAlteracao: "Modificação",
-      descricaoAlteracao: "Alteração nas condições de tratamento de dados pessoais quando necessário para atender aos interesses legítimos do controlador ou de terceiro.",
-      dataPublicacao: "2024-01-15",
-      status: "Vigente"
-    },
-    {
-      id: 2,
-      lei: "Código Civil - Lei nº 10.406/2002",
-      inciso: "Art. 421",
-      clausula: "Parágrafo Único",
-      tipoAlteracao: "Inclusão",
-      descricaoAlteracao: "Inclusão de dispositivo sobre a função social do contrato e seus limites. A liberdade contratual será exercida nos limites da função social do contrato.",
-      dataPublicacao: "2024-02-20",
-      status: "Nova"
-    },
-    {
-      id: 3,
-      lei: "Lei nº 8.078/1990 (CDC)",
-      inciso: "Art. 39, Inciso IV",
-      tipoAlteracao: "Modificação",
-      descricaoAlteracao: "Ampliação das práticas abusivas no fornecimento de produtos ou serviços, incluindo novas modalidades de venda casada e condições contratuais abusivas.",
-      dataPublicacao: "2024-03-10",
-      status: "Revisada"
-    },
-    {
-      id: 5,
-      lei: "Lei nº 13.874/2019 (Lei da Liberdade Econômica)",
-      inciso: "Art. 3º, Inciso VII",
-      tipoAlteracao: "Modificação",
-      descricaoAlteracao: "Modificação dos requisitos para reconhecimento de responsabilidade solidária entre empresas de mesmo grupo econômico em relações contratuais.",
-      dataPublicacao: "2024-01-30",
-      status: "Vigente"
-    },
-    {
-      id: 6,
-      lei: "Código de Processo Civil - Lei nº 13.105/2015",
-      inciso: "Art. 190",
-      clausula: "Cláusula de Negócio Processual",
-      tipoAlteracao: "Inclusão",
-      descricaoAlteracao: "Inclusão de novas hipóteses de negócios processuais atípicos em contratos empresariais, permitindo maior flexibilidade na resolução de disputas.",
-      dataPublicacao: "2024-02-28",
-      status: "Nova"
-    },
-    
-    {
-      id: 4,
-      lei: "Lei nº 14.195/2021",
-      inciso: "Art. 2º",
-      tipoAlteracao: "Revogação",
-      descricaoAlteracao: "Revogação de dispositivo sobre prazos contratuais em operações de crédito durante período emergencial.",
-      dataPublicacao: "2023-12-05",
-      status: "Vigente"
-    },
-    {
-      id: 17,
-      lei: "Lei nº 8.666/1993 (Lei de Licitações - antiga)",
-      inciso: "Art. 65",
-      tipoAlteracao: "Revogação",
-      descricaoAlteracao: "Revogação parcial de dispositivos sobre alteração unilateral de contratos administrativos.",
-      dataPublicacao: "2023-06-15",
-      status: "Vigente"
-    }
-  ]);
+  const [leisAdicionadas, setLeisAdicionadas] = useState<AtualizacaoLei[]>([]);
+  const [acoesUsuario, setAcoesUsuario] = useState<Record<number, 'Adicionada' | 'Revogada'>>({});
+
+  // Converter dados da API para o formato do componente
+  const atualizacoes = useMemo<AtualizacaoLei[]>(() => {
+    if (!leisAPI?.data) return leisAdicionadas;
+
+    const leisDaAPI = leisAPI.data.map((lei) => {
+      // Determinar tipo de alteração baseado no siglaTipo
+      let tipoAlteracao: 'Modificação' | 'Inclusão' | 'Revogação' = 'Modificação';
+      if (lei.siglaTipo.includes('INC') || lei.siglaTipo.includes('EMC')) {
+        tipoAlteracao = 'Inclusão';
+      } else if (lei.siglaTipo.includes('REV')) {
+        tipoAlteracao = 'Revogação';
+      }
+
+      // Determinar status baseado no ano
+      let status: 'Nova' | 'Revisada' | 'Vigente' = 'Vigente';
+      if (lei.ano === anoAtual) {
+        status = 'Nova';
+      } else if (lei.ano === anoAtual - 1) {
+        status = 'Revisada';
+      }
+
+      const leiFormatada: AtualizacaoLei = {
+        id: lei.id,
+        lei: `${lei.siglaTipo} ${lei.numero}/${lei.ano || 'S/A'}`,
+        inciso: lei.codTipo ? `Código: ${lei.codTipo}` : undefined,
+        tipoAlteracao,
+        descricaoAlteracao: lei.ementa || 'Sem ementa disponível',
+        dataPublicacao: new Date().toISOString().split('T')[0], // Data atual como fallback
+        status,
+        acaoUsuario: acoesUsuario[lei.id],
+        // Dados originais da API
+        uri: lei.uri,
+        siglaTipo: lei.siglaTipo,
+        codTipo: lei.codTipo,
+        numero: lei.numero,
+        ano: lei.ano,
+      };
+
+      return leiFormatada;
+    });
+
+    // Combinar leis da API com leis adicionadas manualmente
+    return [...leisDaAPI, ...leisAdicionadas];
+  }, [leisAPI, leisAdicionadas, acoesUsuario, anoAtual]);
 
   const anosDisponiveis = Array.from(
     new Set(
-      atualizacoes.map(atualizacao => 
-        new Date(atualizacao.dataPublicacao).getFullYear()
-      )
+      atualizacoes.map(atualizacao => {
+        const ano = new Date(atualizacao.dataPublicacao).getFullYear();
+        return isNaN(ano) ? anoAtual : ano;
+      })
     )
   ).sort((a, b) => b - a);
 
   const atualizacoesFiltradas = atualizacoes
     .filter(atualizacao => {
       const anoPublicacao = new Date(atualizacao.dataPublicacao).getFullYear();
-      return anoPublicacao === anoSelecionado;
+      return isNaN(anoPublicacao) ? false : anoPublicacao === anoSelecionado;
     })
     .sort((a, b) => {
       return new Date(b.dataPublicacao).getTime() - new Date(a.dataPublicacao).getTime();
     });
 
   const handleAdicionar = (id: number) => {
-    setAtualizacoes(prevAtualizacoes =>
-      prevAtualizacoes.map(atualizacao =>
-        atualizacao.id === id
-          ? { ...atualizacao, acaoUsuario: 'Adicionada' as const }
-          : atualizacao
-      )
-    );
+    setAcoesUsuario(prev => ({
+      ...prev,
+      [id]: 'Adicionada'
+    }));
   };
 
   const handleRevogar = (id: number) => {
-    setAtualizacoes(prevAtualizacoes =>
-      prevAtualizacoes.map(atualizacao =>
-        atualizacao.id === id
-          ? { ...atualizacao, acaoUsuario: 'Revogada' as const }
-          : atualizacao
-      )
-    );
+    setAcoesUsuario(prev => ({
+      ...prev,
+      [id]: 'Revogada'
+    }));
   };
 
   const handleRemoverAcao = (id: number) => {
-    setAtualizacoes(prevAtualizacoes =>
-      prevAtualizacoes.map(atualizacao =>
-        atualizacao.id === id
-          ? { ...atualizacao, acaoUsuario: undefined }
-          : atualizacao
-      )
-    );
+    setAcoesUsuario(prev => {
+      const newActions = { ...prev };
+      delete newActions[id];
+      return newActions;
+    });
   };
 
   const handleAdicionarNovaLei = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const novoId = Math.max(...atualizacoes.map(a => a.id)) + 1;
+    const novoId = Math.max(0, ...atualizacoes.map(a => a.id), ...leisAdicionadas.map(a => a.id)) + 1;
     
     const leiCompleta: AtualizacaoLei = {
       id: novoId,
@@ -262,7 +150,7 @@ export default function PaginaDeLeis() {
       status: novaLei.status
     };
 
-    setAtualizacoes(prev => [...prev, leiCompleta]);
+    setLeisAdicionadas(prev => [...prev, leiCompleta]);
     
     // Resetar o formulário
     setNovaLei({
@@ -294,6 +182,27 @@ export default function PaginaDeLeis() {
           </Card>
         </div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-[#C69F66]" />
+            <p className="ml-3 text-[#1A365D]">Carregando legislações...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {isError && (
+          <Card className="bg-red-50 border-red-200 mb-6">
+            <CardContent className="p-6 text-center">
+              <p className="text-red-700">
+                Erro ao carregar as legislações. Por favor, tente novamente mais tarde.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {!isLoading && !isError && (
+          <>
         {/* Filtro de Ano e Botão Adicionar Lei */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <Dialog open={modalAberto} onOpenChange={setModalAberto}>
@@ -446,26 +355,6 @@ export default function PaginaDeLeis() {
             </DialogContent>
           </Dialog>
 
-          <div className="flex items-center gap-3">
-            <label htmlFor="ano-select" className="text-[#1A365D] font-medium">
-              Filtrar por período:
-            </label>
-            <Select
-              value={anoSelecionado.toString()}
-              onValueChange={(value) => setAnoSelecionado(Number(value))}
-            >
-              <SelectTrigger className="w-[180px] bg-white border-[#C69F66]">
-                <SelectValue placeholder="Selecione o ano" />
-              </SelectTrigger>
-              <SelectContent>
-                {anosDisponiveis.map((ano) => (
-                  <SelectItem key={ano} value={ano.toString()}>
-                    {ano}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -517,6 +406,8 @@ export default function PaginaDeLeis() {
             </Card>
           )}
         </div>
+        </>
+        )}
       </div>
     </div>
   );
