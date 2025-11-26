@@ -16,6 +16,8 @@ import React, { useRef } from "react"
 import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import z from "zod"
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 
 const sendMessageSchema = z.object({
@@ -97,7 +99,11 @@ export default function FileChat({ params }: { params: Promise<{ code: string }>
                             <Avatar>
                             <AvatarFallback>{mensagem.usuario_tipo === "Usuário" ? "U" : "AI"}</AvatarFallback>
                             </Avatar>
-                            <div>{mensagem.conteudo}</div>
+                            <div className="prose prose-sm text-slate-600 max-w-none mb-5">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                    {mensagem.conteudo}
+                                </ReactMarkdown>
+                            </div>
                         </div>
                         ))}
                     {

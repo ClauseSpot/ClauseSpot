@@ -19,10 +19,10 @@ import { toast } from "@/components/ui/use-toast";
 
 export default function UploadArquivos() {
   const router = useRouter();
-  const { data: listaArquivos, isLoading, isSuccess } = useQueryGetArquivos(1);
+  const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}" );
+  const { data: listaArquivos, isLoading, isSuccess } = useQueryGetArquivos(userInfo.id);
   const [filtro, setFiltro] = useState("");
 
-  // Função de destaque da palavra
   const highlight = (text: string, keyword: string) => {
     if (!text) return "";
     if (!keyword) return text;
@@ -33,13 +33,11 @@ export default function UploadArquivos() {
     );
   };
 
-  // Filtra a lista
   const arquivosFiltrados =
     listaArquivos?.filter((a: iArquivos) =>
       a.nome_original.toLowerCase().includes(filtro.toLowerCase())
     ) || [];
 
-  // Exibe toast quando a busca não encontra resultados
   useEffect(() => {
     if (filtro && arquivosFiltrados.length === 0) {
       toast({
@@ -54,56 +52,53 @@ export default function UploadArquivos() {
     <>
       <ModalAdicionarArquivo />
 
-      {/* Campo de busca */}
-     <div className="flex justify-start my-4 px-6">
-  <input
-    type="text"
-    placeholder="Buscar arquivo..."
-    value={filtro}
-    onChange={(e) => setFiltro(e.target.value)}
-    className="border border-[#C69F66] rounded-md p-2 w-full max-w-md focus:ring-2 focus:ring-[#1A365D] placeholder:text-gray-500 shadow-sm"
-  />
-</div>
+    <div className="flex justify-start my-4 px-6">
+        <input
+            type="text"
+            placeholder="Buscar arquivo..."
+            value={filtro}
+            onChange={(e) => setFiltro(e.target.value)}
+            className="border border-[#C69F66] rounded-md p-2 w-full max-w-md focus:ring-2 focus:ring-[#1A365D] placeholder:text-gray-500 shadow-sm"
+        />
+    </div>
 
-      {/* Estado de carregamento */}
       {isLoading && (
         <p className="text-center text-[#1A365D] font-semibold mt-8">
           Carregando arquivos...
         </p>
       )}
 
-      {/* Lista de arquivos */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
         {isSuccess && arquivosFiltrados.length > 0 ? (
           arquivosFiltrados.map((arquivo: iArquivos) => (
             <Card
-              key={arquivo.id}
-              className="shadow-md border border-[#C69F66] hover:shadow-lg transition-all"
+            key={arquivo.id}
+            className="min-h-[180px] shadow-md border border-[#C69F66] hover:shadow-lg transition-all flex"
             >
-              <CardHeader>
-                <CardTitle
-                  className="text-[#1A365D]"
-                  dangerouslySetInnerHTML={{
-                    __html: highlight(arquivo.nome_original, filtro),
-                  }}
-                />
-              </CardHeader>
+                <div className="flex flex-col h-full justify-between w-full">
 
-              <CardContent>
-                <p className="text-[#2B6CB0]">
-                  Data de Registro:{" "}
-                  {new Date(arquivo.criado_em).toLocaleDateString("pt-BR")}
-                </p>
-              </CardContent>
+                    <CardHeader className="pb-2">
+                    <CardTitle className="text-[#1A365D] font-bold truncate max-w-full block">
+                        {arquivo.nome_original}
+                    </CardTitle>
+                    </CardHeader>
 
-              <CardFooter>
-                <Button
-                  onClick={() => router.push(`/home/fileChat/${arquivo.id}`)}
-                  className="bg-[#1A365D] hover:bg-[#2B6CB0] text-white"
-                >
-                  Conversar com o Arquivo
-                </Button>
-              </CardFooter>
+                    <CardContent className="flex-grow">
+                    <p className="text-[#2B6CB0] text-sm">
+                        Data de Registro: {new Date(arquivo.criado_em).toLocaleDateString("pt-BR")}
+                    </p>
+                    </CardContent>
+
+                    <CardFooter className="pt-2">
+                    <Button
+                        onClick={() => router.push(`/home/fileChat/${arquivo.id}`)}
+                        className="w-full bg-[#1A365D] hover:bg-[#2B6CB0] text-white"
+                    >
+                        Conversar com o Arquivo
+                    </Button>
+                    </CardFooter>
+
+                </div>
             </Card>
           ))
         ) : (

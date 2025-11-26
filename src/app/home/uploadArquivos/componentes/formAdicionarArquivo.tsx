@@ -36,8 +36,8 @@ export const FormAdicionarArquivo: React.FC<AddArquivoFormProps> = ({
   closeDialog,
 }) => {
   const router = useRouter();
-  const { toast } = useToast(); // ✅ Inicializa o sistema global de toast
-  const userId = 1; // Pode vir do contexto futuramente
+  const { toast } = useToast();
+  const userId = JSON.parse(localStorage.getItem("userInfo") || "{}" ).id;
 
   const form = useForm<AddArquivoFormType>({
     resolver: zodResolver(addArquivoSchema),
@@ -84,7 +84,7 @@ export const FormAdicionarArquivo: React.FC<AddArquivoFormProps> = ({
         onSubmit={form.handleSubmit(handleFormSubmit)}
         className="grid grid-cols-2 max-h-[80vh] overflow-y-auto gap-x-4 gap-y-2 p-4"
       >
-        {/* Nome do arquivo */}
+
         <FormField
           control={form.control}
           name="nome"
@@ -103,7 +103,6 @@ export const FormAdicionarArquivo: React.FC<AddArquivoFormProps> = ({
           )}
         />
 
-        {/* Upload de arquivo */}
         <FormField
           control={form.control}
           name="file"
@@ -136,7 +135,6 @@ export const FormAdicionarArquivo: React.FC<AddArquivoFormProps> = ({
 
         <Separator className="col-span-2 mt-5 mb-5" />
 
-        {/* Botão de envio */}
         <div className="col-span-2 flex justify-end">
           <Button type="submit" disabled={isPending}>
             {isPending ? "Enviando..." : "Salvar"}
