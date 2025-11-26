@@ -116,7 +116,16 @@ export const FormAdicionarArquivo: React.FC<AddArquivoFormProps> = ({
                   accept="application/pdf"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (file) field.onChange(file);
+                    const maxSize = 3 * 1024 * 1024
+                    if (file) {
+                      if (file.size > maxSize) {
+                        alert("O arquivo excede o tamanho máximo permitido de 3MB.");
+                        e.target.value = ""
+                        return;
+                      } else {
+                        field.onChange(file);
+                      }
+                    }
                   }}
                 />
               </FormControl>
