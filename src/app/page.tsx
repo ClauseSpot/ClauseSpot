@@ -9,7 +9,7 @@ export default function LoginPage() {
   const [authCode, setAuthCode] = useState("");
   const [authError, setAuthError] = useState("");
   const [userInfo, setUserInfo] = useState<any>(null);
-  const { toast } = useToast(); // ✅ Inicializa o toast
+  const { toast } = useToast();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

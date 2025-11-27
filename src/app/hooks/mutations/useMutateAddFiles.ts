@@ -1,6 +1,6 @@
+import { useToast } from '@/components/ui/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import { toast } from 'sonner';
 
 async function addFile(formData: any) {
 
@@ -16,13 +16,16 @@ async function addFile(formData: any) {
 export function useMutationAddFiles() {
 
     const queryClient = useQueryClient()
-
+    const { toast } = useToast();
     return useMutation({
         mutationKey: ['file'],
         mutationFn: (formData: any) => addFile(formData),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['files'] })
-            toast.success("Arquivo enviado com sucesso!");
+            toast({
+                title: "✅ Arquivo adicionado com sucesso!",
+                duration: 3500,
+            });
         }
     })
 }

@@ -16,6 +16,7 @@ import {
 } from "@/app/hooks/useQueryGetArquivos";
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
+import { BotaoConfirmarInativacao } from "./componentes/botaoConfirmacarInativacao";
 
 export default function UploadArquivos() {
   const router = useRouter();
@@ -73,11 +74,10 @@ export default function UploadArquivos() {
           arquivosFiltrados.map((arquivo: iArquivos) => (
             <Card
             key={arquivo.id}
-            className="min-h-[180px] shadow-md border border-[#C69F66] hover:shadow-lg transition-all flex"
+            className="min-h-[180px] shadow-md border border-[#C69F66] hover:shadow-2x1 hover:scale-105 hover:ring-1 hover:ring-[#C69F66] transition-all flex"
             >
                 <div className="flex flex-col h-full justify-between w-full">
-
-                    <CardHeader className="pb-2">
+                    <CardHeader>
                     <CardTitle className="text-[#1A365D] font-bold truncate max-w-full block">
                         {arquivo.nome_original}
                     </CardTitle>
@@ -89,13 +89,16 @@ export default function UploadArquivos() {
                     </p>
                     </CardContent>
 
-                    <CardFooter className="pt-2">
-                    <Button
-                        onClick={() => router.push(`/home/fileChat/${arquivo.id}`)}
-                        className="w-full bg-[#1A365D] hover:bg-[#2B6CB0] text-white"
-                    >
-                        Conversar com o Arquivo
-                    </Button>
+                    <CardFooter className="mt-2">
+                        <div className="pt-10 grid items-center gap-2 w-full">
+                            <Button
+                                onClick={() => router.push(`/home/fileChat/${arquivo.id}`)}
+                                className="w-full bg-[#1A365D] hover:bg-[#2B6CB0] text-white"
+                                >
+                                Conversar com o Arquivo
+                            </Button>
+                            <BotaoConfirmarInativacao fileId={arquivo.id} />
+                        </div>
                     </CardFooter>
 
                 </div>
