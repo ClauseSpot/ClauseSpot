@@ -11,6 +11,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -22,6 +29,7 @@ import { useMutationAddFiles } from "@/app/hooks/mutations/useMutateAddFiles";
 const addArquivoSchema = z.object({
   nome: z.string().min(1, "O nome do arquivo é obrigatório."),
   file: z.instanceof(File, { message: "Selecione um arquivo válido." }),
+  categoria: z.string().min(1, "Selecione uma categoria."),
 });
 
 type AddArquivoFormType = z.infer<typeof addArquivoSchema>;
@@ -50,7 +58,8 @@ export const FormAdicionarArquivo: React.FC<AddArquivoFormProps> = ({
       const formData = new FormData();
       formData.append("usuario_id", String(userId));
       formData.append("file", data.file);
-      formData.append("nome", data.nome);
+      formData.append("apelido_arquivo", data.nome);
+      formData.append("categoria", data.categoria);
 
       await mutateAsync(formData);
 
@@ -128,6 +137,31 @@ export const FormAdicionarArquivo: React.FC<AddArquivoFormProps> = ({
                   }}
                 />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="categoria"
+          render={({ field }) => (
+            <FormItem className="col-span-2">
+              <FormLabel>Categoria</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger className="bg-white focus:ring-[#1A365D]">
+                    <SelectValue placeholder="Selecione uma categoria" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="contrato">Contrato</SelectItem>
+                  <SelectItem value="documento">Documento</SelectItem>
+                  <SelectItem value="regulamento">Regulamento</SelectItem>
+                  <SelectItem value="prova">Prova</SelectItem>
+                  <SelectItem value="anexo">Anexo</SelectItem>
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}

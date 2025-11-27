@@ -6,7 +6,10 @@ export interface iArquivos {
     usuario_id: number,
     nome_original: string,
     tipo: string,
-    criado_em: string
+    criado_em: string,
+    ativo: boolean,
+    categoria: string,
+    apelido_arquivo: string
 }
 
 async function fetchFiles (userId: number) {
