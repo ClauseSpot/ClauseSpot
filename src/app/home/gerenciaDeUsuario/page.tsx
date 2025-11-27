@@ -13,8 +13,8 @@ export interface User {
   nome: string;
   email: string;
   status: 'Ativo' | 'Inativo';
-  criadoEm: string;
-  cargo: 'Gestor' | 'Curador' | 'Usuário' | null;
+  criadoEm: string; 
+  cargo: 'Gestor' | 'Curador' | 'Usuário' | null; 
 }
 
 const API_URL = 'http://localhost:3001/api';
@@ -63,7 +63,8 @@ export default function ManagementPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Ocorreu um erro.');
+        // Lança um erro com a mensagem do backend ou genérica
+        throw new Error(errorData.message || 'Ocorreu um erro ao salvar o usuário.');
       }
 
       const savedUser = await response.json();
@@ -81,10 +82,11 @@ export default function ManagementPage() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro desconhecido.';
       toast.error(errorMessage);
+      throw error; 
     }
   };
 
-  // 3. FUNÇÃO DE DELETAR CONECTADA AO BACKEND
+  // Função para deletar usuário
   const handleDeleteUser = async (userId: number) => {
     if (confirm('Tem certeza que deseja excluir este usuário?')) {
       try {

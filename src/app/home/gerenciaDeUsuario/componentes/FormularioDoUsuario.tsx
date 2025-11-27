@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,15 +24,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { toast } from "@/components/ui/use-toast"; // ✅ Import correto
-
 // 🔹 Schema base de validação
 const baseSchema = z.object({
   usuario: z.string().min(3, { message: "Usuário deve ter no mínimo 3 caracteres." }),
   nome: z.string().min(3, { message: "Nome deve ter no mínimo 3 caracteres." }),
   email: z.string().email({ message: "Por favor, insira um e-mail válido." }),
   status: z.enum(["Ativo", "Inativo"]),
-  cargo: z.enum(["Gestor", "Curador", "Usuário"]).nullable(),
+  cargo: z.enum(["Gestor", "Curador", "Usuário"]).nullable(), 
 });
 
 const createUserSchema = baseSchema.extend({
@@ -53,7 +52,7 @@ export type DadosDoFormulario = z.infer<typeof baseSchema> & {
 
 interface PropsFormDeUsuario {
   initialData?: DadosDoFormulario | null;
-  onSave: (data: DadosDoFormulario) => void;
+  onSave: (data: DadosDoFormulario) => Promise<void>; 
   onCancel: () => void;
 }
 
@@ -63,6 +62,7 @@ export const FormularioDoUsuario = ({
   onCancel,
 }: PropsFormDeUsuario) => {
   const isEditing = !!initialData;
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<DadosDoFormulario>({
     resolver: zodResolver(isEditing ? editUserSchema : createUserSchema),
@@ -95,22 +95,15 @@ export const FormularioDoUsuario = ({
     }
   }, [initialData, form.reset]);
 
-  // 🔹 Ao enviar o formulário
-  const onSubmit = (data: DadosDoFormulario) => {
+  const onSubmit = async (data: DadosDoFormulario) => {
+    setIsSubmitting(true);
     try {
-      onSave(data);
-      toast({
-        title: "✅ Usuário salvo com sucesso!",
-        description: isEditing
-          ? "As informações do usuário foram atualizadas."
-          : "Um novo usuário foi cadastrado com sucesso.",
-      });
-    } catch {
-      toast({
-        variant: "destructive",
-        title: "❌ Erro ao salvar usuário",
-        description: "Ocorreu um problema ao tentar salvar.",
-      });
+      await onSave(data); 
+    } catch (error) {
+      console.error("Erro no submit:", error);
+      toast.error("Ocorreu um erro ao salvar. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -124,7 +117,7 @@ export const FormularioDoUsuario = ({
             <FormItem>
               <FormLabel>Usuário</FormLabel>
               <FormControl>
-                <Input placeholder="Ex: ana.silva" {...field} />
+                <Input placeholder="Ex: ana.silva" {...field} disabled={isSubmitting} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -138,7 +131,7 @@ export const FormularioDoUsuario = ({
             <FormItem>
               <FormLabel>Nome Completo</FormLabel>
               <FormControl>
-                <Input placeholder="Ex: Ana Silva" {...field} />
+                <Input placeholder="Ex: Ana Silva" {...field} disabled={isSubmitting} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -152,7 +145,7 @@ export const FormularioDoUsuario = ({
             <FormItem>
               <FormLabel>E-mail</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="Ex: ana.silva@example.com" {...field} />
+                <Input type="email" placeholder="Ex: ana.silva@example.com" {...field} disabled={isSubmitting} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -165,7 +158,7 @@ export const FormularioDoUsuario = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Status</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value} disabled={isSubmitting}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o status" />
@@ -187,7 +180,7 @@ export const FormularioDoUsuario = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Cargo</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+              <Select onValueChange={field.onChange} value={field.value || ""} disabled={isSubmitting}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o cargo" />
@@ -215,6 +208,7 @@ export const FormularioDoUsuario = ({
                   type="password"
                   placeholder={isEditing ? "Deixe em branco para não alterar" : "********"}
                   {...field}
+                  disabled={isSubmitting}
                 />
               </FormControl>
               <FormMessage />
@@ -223,15 +217,16 @@ export const FormularioDoUsuario = ({
         />
 
         <div className="flex justify-end gap-4 pt-4">
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
             Cancelar
           </Button>
           <Button
             type="submit"
             style={{ backgroundColor: "#2c5582" }}
             className="text-white hover:opacity-90"
+            disabled={isSubmitting}
           >
-            Salvar Usuário
+            {isSubmitting ? "Salvando..." : "Salvar Usuário"}
           </Button>
         </div>
       </form>
