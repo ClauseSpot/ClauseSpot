@@ -4,11 +4,14 @@ import axios from 'axios';
 
 
 async function deactivateFile(fileId: number) {
-
+    const token = localStorage.getItem("token");
     const response = await axios.patch("http://localhost:3001/api/deactivateFile",
         {
             fileId: fileId
         },
+        { headers: {
+            'Authorization': `Bearer ${token}`
+        }}
     );
 
     if (!response) throw new Error("Erro ao inativar arquivo");

@@ -13,9 +13,13 @@ export interface iArquivos {
 }
 
 async function fetchFiles (userId: number) {
+    const token = localStorage.getItem("token");
     const response = await axios.post("http://localhost:3001/api/files",
         { usuario_id: userId },
-        { headers: { 'Content-Type': 'application/json'} },
+        { headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }},
     )
 
     return response.data.data

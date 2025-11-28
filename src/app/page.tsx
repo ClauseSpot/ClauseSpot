@@ -29,6 +29,13 @@ export default function LoginPage() {
       if (data.valid === true) {
         setError("");
         setUserInfo(data.user);
+        
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+        } else {
+          console.warn("⚠️ Token não encontrado na resposta do login");
+        }
+        
         setShowAuthModal(true);
 
         toast({
@@ -109,7 +116,6 @@ export default function LoginPage() {
     <div className="login-container">
       <div className="login-app-title">ClauseSpot</div>
 
-      {/* Formulário de login */}
       <form className="login-form" onSubmit={handleSubmit}>
         <h2>Login</h2>
         {error && <div className="login-error">{error}</div>}
@@ -118,7 +124,6 @@ export default function LoginPage() {
         <button type="submit">Validar usuário</button>
       </form>
 
-      {/* Modal de autenticação */}
       {showAuthModal && (
         <div className="modal-overlay">
           <div className="modal-content">

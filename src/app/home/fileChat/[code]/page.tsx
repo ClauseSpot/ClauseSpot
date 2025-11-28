@@ -40,7 +40,6 @@ export default function FileChat({ params }: { params: Promise<{ code: string }>
 
     const { data: arquivo, isLoading: loadingArquivos, isSuccess: successArquivo } = useQueryGetArquivoById(code)
 
-    // console.log("Esse é o arquivo: ", arquivo)
 
     const { mutateAsync, isPending, isSuccess } = useMutationSendMessage()
 

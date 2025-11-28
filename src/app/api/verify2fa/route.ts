@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const { email, code } = await request.json();
-    console.log('Verify2FA request for:', email);
 
     const response = await fetch('http://localhost:3001/api/verifyCode', {
       method: 'POST',
@@ -12,7 +11,6 @@ export async function POST(request: NextRequest) {
     });
 
     const data = await response.json();
-    console.log('Verify2FA backend response:', data);
 
     return NextResponse.json(data);
   } catch (error) {

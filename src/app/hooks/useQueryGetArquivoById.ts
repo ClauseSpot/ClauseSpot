@@ -10,10 +10,14 @@ export interface iArquivos {
 }
 
 async function fetchFile (fileId: number) {
+    const token = localStorage.getItem("token");
     const response = await axios.get("http://localhost:3001/api/getFileById", 
         {
             params: {
                 fileId: fileId
+            },
+            headers: {
+                'Authorization': `Bearer ${token}`
             }
         }
     )

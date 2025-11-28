@@ -10,9 +10,13 @@ export interface iMensagem {
 }
 
 async function fetchHistorico (code: number) {
+    const token = localStorage.getItem("token");
     const response = await axios.post("http://localhost:3001/api/chatHistory",
         { file_id: code },
-        { headers: { 'Content-Type': 'application/json'} },
+        { headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }},
     )
 
     return response.data.data

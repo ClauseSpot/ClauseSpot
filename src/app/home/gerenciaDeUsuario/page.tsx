@@ -18,7 +18,7 @@ export interface User {
 }
 
 const API_URL = 'http://localhost:3001/api';
-
+const token = localStorage.getItem("token");
 export default function ManagementPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -27,7 +27,12 @@ export default function ManagementPage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch(`${API_URL}/getUsers`);
+        const response = await fetch(`${API_URL}/getUsers`,
+          { headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+        );
         if (!response.ok) throw new Error('Falha ao buscar usuários');
         const data = await response.json();
         setUsers(data);
@@ -63,7 +68,6 @@ export default function ManagementPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        // Lança um erro com a mensagem do backend ou genérica
         throw new Error(errorData.message || 'Ocorreu um erro ao salvar o usuário.');
       }
 
@@ -86,7 +90,6 @@ export default function ManagementPage() {
     }
   };
 
-  // Função para deletar usuário
   const handleDeleteUser = async (userId: number) => {
     if (confirm('Tem certeza que deseja excluir este usuário?')) {
       try {

@@ -3,9 +3,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
 async function addFile(formData: any) {
-
+    const token = localStorage.getItem("token");
     const response = await axios.post("http://localhost:3001/api/upload", 
-        formData
+        formData,
+        { headers: { 
+            'Authorization': `Bearer ${token}`
+        }}
     );
 
     if (!response) throw new Error("Erro ao enviar arquivo");

@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import "./layout.css";
 import ReactQueryClientProvider from "@/components/ReactQueryClientProvider";
 import { useState, useEffect } from "react";
+import { setupAxiosInterceptors, performLogout } from "@/lib/axiosConfig";
 
 type UserInfo = {
   cargo: "Gestor" | "Curador" | "Usuário" | null;
@@ -22,11 +23,15 @@ export default function HomeLayout({
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
+    setupAxiosInterceptors();
+
     if (typeof window !== "undefined") {
       const isAuthenticated =
         localStorage.getItem("isAuthenticated") === "true";
+      const token = localStorage.getItem("token");
 
-      if (!isAuthenticated) {
+      if (!isAuthenticated || !token) {
+        console.warn("⚠️ Sem autenticação ou token - Redirecionando para login");
         router.push("/");
         return;
       }
@@ -48,13 +53,7 @@ export default function HomeLayout({
 
   const handleLogout = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
-
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("isAuthenticated");
-      localStorage.removeItem("userInfo");
-    }
-
-    router.push("/");
+    performLogout();
   };
 
   if (isCheckingAuth) {

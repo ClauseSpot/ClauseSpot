@@ -101,7 +101,6 @@ export default function UploadArquivos() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
         {isSuccess && arquivosFiltrados.length > 0 ? (
           arquivosFiltrados.map((arquivo: iArquivos) => (
-            console.log("arquivo", arquivo),
             <Card
             key={arquivo.id}
             className="min-h-[180px] shadow-md border border-[#C69F66] hover:shadow-2x1 hover:scale-105 hover:ring-1 hover:ring-[#C69F66] transition-all flex"

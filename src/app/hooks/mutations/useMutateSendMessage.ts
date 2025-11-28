@@ -9,9 +9,12 @@ export interface iBodyMessage {
 }
 
 async function sendMessage(bodyMessage: iBodyMessage) {
-
+    const token = localStorage.getItem("token");
     const response = await axios.post("http://localhost:3001/api/chat", 
-        bodyMessage
+        bodyMessage,
+        { headers: {
+            'Authorization': `Bearer ${token}`
+        }}
     );
 
     if (!response) throw new Error("Erro ao enviar mensagem");
