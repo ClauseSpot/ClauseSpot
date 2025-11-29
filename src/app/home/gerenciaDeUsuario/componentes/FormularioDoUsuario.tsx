@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { toast } from "sonner";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -52,7 +50,7 @@ export type DadosDoFormulario = z.infer<typeof baseSchema> & {
 
 interface PropsFormDeUsuario {
   initialData?: DadosDoFormulario | null;
-  onSave: (data: DadosDoFormulario) => Promise<void>; 
+  onSave: (data: DadosDoFormulario) => Promise<void>;
   onCancel: () => void;
 }
 
@@ -98,10 +96,9 @@ export const FormularioDoUsuario = ({
   const onSubmit = async (data: DadosDoFormulario) => {
     setIsSubmitting(true);
     try {
-      await onSave(data); 
+      await onSave(data);
     } catch (error) {
-      console.error("Erro no submit:", error);
-      toast.error("Ocorreu um erro ao salvar. Tente novamente.");
+      console.error("Erro capturado no formulário:", error);
     } finally {
       setIsSubmitting(false);
     }

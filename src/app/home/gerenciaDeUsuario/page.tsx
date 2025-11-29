@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { UserPlus } from 'lucide-react';
-import { toast } from 'sonner';
+import { useToast } from "@/components/ui/use-toast";
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { FormularioDoUsuario, type DadosDoFormulario } from './componentes/FormularioDoUsuario';
@@ -18,14 +18,17 @@ export interface User {
 }
 
 const API_URL = 'http://localhost:3001/api';
-const token = localStorage.getItem("token");
+
 export default function ManagementPage() {
+  const { toast } = useToast(); 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
     const fetchUsers = async () => {
+      const token = localStorage.getItem("token");
+      
       try {
         const response = await fetch(`${API_URL}/getUsers`,
           { headers: {
@@ -38,11 +41,15 @@ export default function ManagementPage() {
         setUsers(data);
       } catch (error) {
         console.error(error);
-        toast.error('Não foi possível carregar a lista de usuários.');
+        toast({
+          variant: "destructive",
+          title: "Erro de conexão",
+          description: "Não foi possível carregar a lista de usuários."
+        });
       }
     };
     fetchUsers();
-  }, []);
+  }, [toast]); // Adicionado toast nas dependências
 
   const handleOpenModal = (user: User | null) => {
     setEditingUser(user);
@@ -55,6 +62,8 @@ export default function ManagementPage() {
   };
 
   const handleSaveUser = async (formData: DadosDoFormulario) => {
+    const token = localStorage.getItem("token");
+
     try {
       const isEditing = !!editingUser;
       const url = isEditing ? `${API_URL}/users/${editingUser.id}` : `${API_URL}/users`;
@@ -62,7 +71,10 @@ export default function ManagementPage() {
 
       const response = await fetch(url, {
         method: method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
         body: JSON.stringify(formData),
       });
 
@@ -75,36 +87,58 @@ export default function ManagementPage() {
 
       if (isEditing) {
         setUsers(users.map(u => (u.id === savedUser.id ? savedUser : u)));
-        toast.success("Usuário atualizado com sucesso!");
+        toast({
+          title: "Sucesso!",
+          description: "Usuário atualizado com sucesso.",
+        });
       } else {
         setUsers(prevUsers => [...prevUsers, savedUser]);
-        toast.success("Usuário cadastrado com sucesso!");
+        toast({
+          title: "Sucesso!",
+          description: "Novo usuário cadastrado.",
+        });
       }
       
       handleCloseModal();
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro desconhecido.';
-      toast.error(errorMessage);
+      toast({
+        variant: "destructive",
+        title: "Erro ao salvar",
+        description: errorMessage,
+      });
       throw error; 
     }
   };
 
   const handleDeleteUser = async (userId: number) => {
+    const token = localStorage.getItem("token");
+
     if (confirm('Tem certeza que deseja excluir este usuário?')) {
       try {
         const response = await fetch(`${API_URL}/users/${userId}`, {
           method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         });
 
         if (!response.ok) throw new Error('Falha ao excluir usuário.');
 
         setUsers(users.filter(user => user.id !== userId));
-        toast.success("Usuário excluído com sucesso!");
+        toast({
+          title: "Usuário excluído",
+          description: "O usuário foi removido do sistema com sucesso.",
+        });
         
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro desconhecido.';
-        toast.error(errorMessage);
+        toast({
+          variant: "destructive",
+          title: "Erro ao excluir",
+          description: errorMessage,
+        });
       }
     }
   };
