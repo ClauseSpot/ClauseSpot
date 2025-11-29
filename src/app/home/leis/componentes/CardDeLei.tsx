@@ -17,15 +17,11 @@ import { useToast } from "@/components/ui/use-toast"; // ✅ Importa o sistema g
 interface CardDeLeiProps {
   atualizacao: AtualizacaoLei;
   onAdicionar: (id: number) => void;
-  onRevogar: (id: number) => void;
-  onRemoverAcao: (id: number) => void;
 }
 
 export const CardDeLei = ({
   atualizacao,
   onAdicionar,
-  onRevogar,
-  onRemoverAcao,
 }: CardDeLeiProps) => {
   const { toast } = useToast(); // ✅ Inicializa o toast
 
@@ -63,30 +59,8 @@ export const CardDeLei = ({
     });
   };
 
-  // ✅ Toasts personalizados para cada ação
-  const handleAdicionar = (id: number) => {
-    onAdicionar(id);
-    toast({
-      title: "✅ Lei adicionada com sucesso!",
-      description: `A lei "${atualizacao.lei}" foi marcada como adicionada.`,
-    });
-  };
-
-  const handleRevogar = (id: number) => {
-    onRevogar(id);
-    toast({
-      variant: "destructive",
-      title: "⚠️ Lei revogada",
-      description: `A lei "${atualizacao.lei}" foi marcada como revogada.`,
-    });
-  };
-
-  const handleRemover = (id: number) => {
-    onRemoverAcao(id);
-    toast({
-      title: "↩️ Ação removida",
-      description: `A marcação da lei "${atualizacao.lei}" foi removida.`,
-    });
+  const handleAdicionar = (atualizacao: any) => {
+    onAdicionar(atualizacao);
   };
 
   return (
@@ -123,13 +97,6 @@ export const CardDeLei = ({
                     <Ban className="h-3 w-3" />
                   )}
                   {atualizacao.acaoUsuario}
-                  <button
-                    onClick={() => handleRemover(atualizacao.id)}
-                    className="ml-1 hover:opacity-70 transition-opacity"
-                    title="Remover ação"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
                 </span>
               )}
             </div>
@@ -165,46 +132,15 @@ export const CardDeLei = ({
           </div>
 
           <div className="lg:w-48 flex lg:flex-col items-center lg:items-end gap-3">
-            <div
-              className={`py-2 px-4 rounded-lg border-2 text-center ${getTipoAlteracaoColor(
-                atualizacao.tipoAlteracao
-              )}`}
-            >
-              <div className="flex items-center justify-center gap-2 mb-1">
-                {atualizacao.tipoAlteracao === "Inclusão" && (
-                  <CheckCircle className="h-4 w-4" />
-                )}
-                {atualizacao.tipoAlteracao === "Revogação" && (
-                  <AlertCircle className="h-4 w-4" />
-                )}
-                {atualizacao.tipoAlteracao === "Modificação" && (
-                  <FileText className="h-4 w-4" />
-                )}
-              </div>
-              <p className="text-xs font-bold uppercase tracking-wide">
-                {atualizacao.tipoAlteracao}
-              </p>
-            </div>
-
-            {/* ✅ Botões de ação com feedback visual */}
             {!atualizacao.acaoUsuario && (
               <div className="flex lg:flex-col gap-2 w-full lg:w-auto">
                 <Button
-                  onClick={() => handleAdicionar(atualizacao.id)}
+                  onClick={() => handleAdicionar(atualizacao)}
                   className="bg-[#2B6CB0] hover:bg-[#1A365D] text-white text-xs py-2 px-4 flex items-center gap-2 transition-colors"
                   size="sm"
                 >
                   <Plus className="h-4 w-4" />
                   Adicionar
-                </Button>
-                <Button
-                  onClick={() => handleRevogar(atualizacao.id)}
-                  variant="outline"
-                  className="border-[#C69F66] text-[#C69F66] hover:bg-[#C69F66] hover:text-white text-xs py-2 px-4 flex items-center gap-2 transition-colors"
-                  size="sm"
-                >
-                  <Ban className="h-4 w-4" />
-                  Revogar
                 </Button>
               </div>
             )}

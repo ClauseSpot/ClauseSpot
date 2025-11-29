@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { CardDeLei } from "./componentes/CardDeLei";
 import {
@@ -23,8 +23,15 @@ import { Label } from "@/components/ui/label";
 import { Plus, Loader2 } from "lucide-react";
 import { useQueryGetLeis } from "@/app/hooks/useQueryGetLeis";
 import { useToast } from "@/components/ui/use-toast";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useQueryGetLeisAdicionadas } from "@/app/hooks/useQueryGetLeisAdicionadas";
+import { CardLeiAdicionada } from "./componentes/CardLeisAdicionadas";
+import { useMutationAddLeis } from "@/app/hooks/mutations/useMutateAddLeis";
+import { set } from "zod";
+import { useMutationRemoveLei } from "@/app/hooks/mutations/useMutateRevogarLei";
 
 export interface AtualizacaoLei {
+  usuarioId?: number;
   id: number;
   lei: string;
   inciso?: string;
@@ -46,8 +53,15 @@ export default function PaginaDeLeis() {
   const anoAtual = new Date().getFullYear();
   const [anoSelecionado, setAnoSelecionado] = useState(anoAtual);
   const [modalAberto, setModalAberto] = useState(false);
+  const userId = JSON.parse(localStorage.getItem("userInfo") || "{}" ).id;
 
   const { data: leisAPI, isLoading, isError } = useQueryGetLeis();
+
+  const { data: leisAdicionadasBanco, isLoading: loadingLeisAdiciondas, isError: errorLeisAdicionadas } = useQueryGetLeisAdicionadas();
+  
+  const { mutate: adicionarLei, isPending: adicionandoLei, isSuccess: leiAdicionada } = useMutationAddLeis();
+
+  const { mutate: revogarLei, isPending: removendoLei, isSuccess: leiRemovida } = useMutationRemoveLei();
 
   const [novaLei, setNovaLei] = useState({
     lei: "",
@@ -117,12 +131,13 @@ export default function PaginaDeLeis() {
     return ano === anoSelecionado;
   });
 
-  const handleAdicionar = (id: number) => {
-    setAcoesUsuario((prev) => ({ ...prev, [id]: "Adicionada" }));
+  const handleAdicionar = async (atualizacao: any) => {
+    const novaLei = { ...atualizacao, usuarioId: userId };
+    await adicionarLei(novaLei);
   };
 
-  const handleRevogar = (id: number) => {
-    setAcoesUsuario((prev) => ({ ...prev, [id]: "Revogada" }));
+  const handleRevogar = async (id: number) => {
+    await revogarLei(id);
   };
 
   const handleRemoverAcao = (id: number) => {
@@ -133,14 +148,21 @@ export default function PaginaDeLeis() {
     });
   };
 
+  useEffect(() => {
+    if (leiAdicionada) {
+      setModalAberto(false);
+    }
+  }, [leiAdicionada]);
+
   // 🔔 TOAST — ao adicionar nova lei manualmente
-  const handleAdicionarNovaLei = (e: React.FormEvent) => {
+  const handleAdicionarNovaLei = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const novoId =
       Math.max(0, ...atualizacoes.map((a) => a.id)) + 1;
 
     const nova: AtualizacaoLei = {
+      usuarioId: userId,
       id: novoId,
       lei: novaLei.lei,
       inciso: novaLei.inciso || undefined,
@@ -151,24 +173,26 @@ export default function PaginaDeLeis() {
       status: novaLei.status,
     };
 
-    setLeisAdicionadas((prev) => [...prev, nova]);
+    await adicionarLei(nova);
 
-    toast({
-      title: "📘 Nova lei adicionada!",
-      description: `${novaLei.tipoAlteracao} registrada com sucesso.`,
-    });
+    // setLeisAdicionadas((prev) => [...prev, nova]);
 
-    setNovaLei({
-      lei: "",
-      inciso: "",
-      clausula: "",
-      tipoAlteracao: "Modificação",
-      descricaoAlteracao: "",
-      dataPublicacao: "",
-      status: "Nova",
-    });
+    // toast({
+    //   title: "📘 Nova lei adicionada!",
+    //   description: `${novaLei.tipoAlteracao} registrada com sucesso.`,
+    // });
 
-    setModalAberto(false);
+    // setNovaLei({
+    //   lei: "",
+    //   inciso: "",
+    //   clausula: "",
+    //   tipoAlteracao: "Modificação",
+    //   descricaoAlteracao: "",
+    //   dataPublicacao: "",
+    //   status: "Nova",
+    // });
+
+    // setModalAberto(false);
   };
 
   return (
@@ -353,8 +377,8 @@ export default function PaginaDeLeis() {
                 </div>
 
                 <div className="flex justify-end gap-3">
-                  <Button variant="outline">Cancelar</Button>
-                  <Button className="bg-[#2B6CB0] text-white">
+                  <Button type="button" variant="outline">Cancelar</Button>
+                  <Button type="submit" disabled={adicionandoLei} className="bg-[#2B6CB0] text-white">
                     Adicionar Lei
                   </Button>
                 </div>
@@ -362,7 +386,6 @@ export default function PaginaDeLeis() {
             </DialogContent>
           </Dialog>
 
-          {/* FILTRO DE ANO */}
           <div>
             <Select
               value={String(anoSelecionado)}
@@ -382,18 +405,76 @@ export default function PaginaDeLeis() {
           </div>
         </div>
 
-        {/* LISTAGEM */}
-        <div className="space-y-4">
-          {atualizacoesFiltradas.map((a) => (
-            <CardDeLei
-              key={a.id}
-              atualizacao={a}
-              onAdicionar={handleAdicionar}
-              onRevogar={handleRevogar}
-              onRemoverAcao={handleRemoverAcao}
-            />
-          ))}
-        </div>
+        <Accordion type="single" collapsible className="w-full space-y-4">
+          <AccordionItem value="leis-adicionadas" className="border rounded-2xl shadow-sm">
+            <AccordionTrigger className="px-4 py-3 text-lg font-semibold hover:no-underline">
+              📜 Leis adicionadas
+            </AccordionTrigger>
+
+            <AccordionContent>
+              <div className="px-4 pb-4">
+                <div className="max-h-[420px] overflow-y-auto pr-2 space-y-4">
+
+                  {leisAdicionadasBanco?.length > 0 ? (
+                    leisAdicionadasBanco?.map((a: any) => (
+                      <CardLeiAdicionada
+                        key={a.id}
+                        lei={a}
+                        onRevogar={handleRevogar}
+                        onRemoverAcao={handleRemoverAcao}
+                      />
+                    ))
+                  ) : (
+                    <div className="text-center py-10 space-y-3">
+                      <p className="text-2xl">⚖️</p>
+                      <p className="text-base text-muted-foreground font-medium">
+                        Nenhuma lei encontrada no momento
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Tente ajustar os filtros ou adicionar um novo registro
+                      </p>
+                    </div>
+                  )}
+
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="leis-lista" className="border rounded-2xl shadow-sm">
+            <AccordionTrigger className="px-4 py-3 text-lg font-semibold hover:no-underline">
+              📜 Leis disponíveis para adicionar
+            </AccordionTrigger>
+
+            <AccordionContent>
+              <div className="px-4 pb-4">
+                <div className="max-h-[420px] overflow-y-auto pr-2 space-y-4">
+
+                  {atualizacoesFiltradas.length > 0 ? (
+                    atualizacoesFiltradas.map((a) => (
+                      <CardDeLei
+                        key={a.id}
+                        atualizacao={a}
+                        onAdicionar={handleAdicionar}
+                      />
+                    ))
+                  ) : (
+                    <div className="text-center py-10 space-y-3">
+                      <p className="text-2xl">⚖️</p>
+                      <p className="text-base text-muted-foreground font-medium">
+                        Nenhuma lei encontrada no momento
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Tente ajustar os filtros ou adicionar um novo registro
+                      </p>
+                    </div>
+                  )}
+
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+
       </div>
     </div>
   );
