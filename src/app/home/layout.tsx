@@ -107,7 +107,6 @@ export default function HomeLayout({
               Leis
             </Link>
 
-            {/* ✅ Link visível se tiver permissão (Gestor ou Curador) */}
             {podeAcessar && (
               <Link
                 href="/home/gerenciaDeUsuario"
@@ -121,6 +120,13 @@ export default function HomeLayout({
               </Link>
             )}
 
+            <Link
+              href="/home/perfil"
+              className={pathname === "/home/perfil" ? "active" : ""}
+            >
+              Perfil
+            </Link>
+
             <a
               href="/"
               onClick={handleLogout}
@@ -132,7 +138,6 @@ export default function HomeLayout({
         </nav>
 
         <main className="main-content">
-          {/* ✅ Bloqueio de rota ajustado */}
           {pathname === "/home/gerenciaDeUsuario" && !podeAcessar ? (
             <div className="text-center p-10">
               <h1 className="text-2xl font-bold text-red-600">

@@ -17,15 +17,35 @@ export interface User {
   cargo: 'Gestor' | 'Curador' | 'Usuário' | null; 
 }
 
+type UserInfo = {
+  id: number;
+  cargo: "Gestor" | "Curador" | "Usuário" | null;
+};
+
 const API_URL = 'http://localhost:3001/api';
 
 export default function ManagementPage() {
-  const { toast } = useToast(); 
+  const { toast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
+  
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
 
   useEffect(() => {
+    let currentUserId: number | null = null;
+
+    const userInfoString = localStorage.getItem("userInfo");
+    if (userInfoString) {
+      try {
+        const userInfo = JSON.parse(userInfoString);
+        setCurrentUserRole(userInfo.cargo);
+        currentUserId = userInfo.id;
+      } catch (e) {
+        console.error("Erro ao ler dados do usuário", e);
+      }
+    }
+
     const fetchUsers = async () => {
       const token = localStorage.getItem("token");
       
@@ -37,8 +57,13 @@ export default function ManagementPage() {
         }
         );
         if (!response.ok) throw new Error('Falha ao buscar usuários');
-        const data = await response.json();
-        setUsers(data);
+        const data: User[] = await response.json();
+        
+        const filteredUsers = currentUserId 
+          ? data.filter(user => user.id !== currentUserId)
+          : data;
+
+        setUsers(filteredUsers);
       } catch (error) {
         console.error(error);
         toast({
@@ -49,7 +74,7 @@ export default function ManagementPage() {
       }
     };
     fetchUsers();
-  }, [toast]); // Adicionado toast nas dependências
+  }, [toast]);
 
   const handleOpenModal = (user: User | null) => {
     setEditingUser(user);
@@ -127,6 +152,7 @@ export default function ManagementPage() {
         if (!response.ok) throw new Error('Falha ao excluir usuário.');
 
         setUsers(users.filter(user => user.id !== userId));
+        
         toast({
           title: "Usuário excluído",
           description: "O usuário foi removido do sistema com sucesso.",
@@ -151,14 +177,16 @@ export default function ManagementPage() {
             <h1 className="text-3xl font-bold text-[#1A365D]">Gerenciamento de Usuários</h1>
             <p className="mt-1 text-gray-600">Adicione, edite ou visualize os usuários do sistema.</p>
           </div>
-          <Button
-            style={{ backgroundColor: '#2c5582' }}
-            className="text-white hover:opacity-90 flex items-center gap-2"
-            onClick={() => handleOpenModal(null)}
-          >
-            <UserPlus className="h-5 w-5" />
-            Cadastrar Usuário
-          </Button>
+          {currentUserRole === 'Gestor' && (
+            <Button
+              style={{ backgroundColor: '#2c5582' }}
+              className="text-white hover:opacity-90 flex items-center gap-2"
+              onClick={() => handleOpenModal(null)}
+            >
+              <UserPlus className="h-5 w-5" />
+              Cadastrar Usuário
+            </Button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -168,8 +196,15 @@ export default function ManagementPage() {
               user={user}
               onEdit={() => handleOpenModal(user)}
               onDelete={() => handleDeleteUser(user.id)}
+              currentUserRole={currentUserRole}
             />
           ))}
+          
+          {users.length === 0 && (
+            <div className="col-span-3 text-center py-10 text-gray-500">
+              Nenhum outro usuário encontrado.
+            </div>
+          )}
         </div>
       </div>
 
@@ -185,6 +220,7 @@ export default function ManagementPage() {
             onSave={handleSaveUser}
             onCancel={handleCloseModal}
             initialData={editingUser}
+            currentUserRole={currentUserRole} 
           />
         </DialogContent>
       </Dialog>

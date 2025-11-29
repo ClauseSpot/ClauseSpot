@@ -1,15 +1,77 @@
 "use client";
 
-import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast"; // ✅ Importa o sistema global de toast
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { toast } = useToast();
+
   const [error, setError] = useState("");
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authCode, setAuthCode] = useState("");
   const [authError, setAuthError] = useState("");
   const [userInfo, setUserInfo] = useState<any>(null);
-  const { toast } = useToast();
+
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  // 🔹 LÓGICA DE VERIFICAÇÃO DE SESSÃO ATIVA
+  useEffect(() => {
+    const verifySession = async () => {
+      const token = localStorage.getItem("token");
+      const savedUserInfo = localStorage.getItem("userInfo");
+      const isAuthenticated = localStorage.getItem("isAuthenticated");
+
+      if (!token || !savedUserInfo || isAuthenticated !== "true") {
+        setIsCheckingAuth(false);
+        return;
+      }
+
+      try {
+        const response = await fetch("http://localhost:3001/api/getUsers", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error("Sessão inválida");
+        }
+
+        const users = await response.json();
+        const currentUser = JSON.parse(savedUserInfo);
+        
+        const userInDb = users.find((u: any) => u.id === currentUser.id);
+
+        if (userInDb && userInDb.status === "Inativo") {
+           throw new Error("Usuário desativado");
+        }
+
+
+        router.replace("/home");
+
+      } catch (error) {
+        console.warn("Sessão expirada ou usuário inativo:", error);
+        
+        localStorage.removeItem("token");
+        localStorage.removeItem("userInfo");
+        localStorage.removeItem("isAuthenticated");
+        
+        setIsCheckingAuth(false);
+        
+        toast({
+          variant: "destructive",
+          title: "Sessão encerrada",
+          description: "Sua conta foi desativada ou a sessão expirou. Faça login novamente.",
+        });
+      }
+    };
+
+    verifySession();
+  }, [router, toast]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -87,7 +149,7 @@ export default function LoginPage() {
           duration: 3500,
         });
 
-        window.location.href = "/home";
+        router.push("/home"); 
       } else {
         setAuthError(result?.message || "Código inválido");
         toast({
@@ -110,6 +172,14 @@ export default function LoginPage() {
     setAuthCode("");
     setAuthError("");
     setUserInfo(null);
+  }
+
+  if (isCheckingAuth) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#1A365D]">
+        <div className="text-white font-medium">Verificando sessão...</div>
+      </div>
+    );
   }
 
   return (

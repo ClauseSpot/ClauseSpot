@@ -22,7 +22,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// 🔹 Schema base de validação
 const baseSchema = z.object({
   usuario: z.string().min(3, { message: "Usuário deve ter no mínimo 3 caracteres." }),
   nome: z.string().min(3, { message: "Nome deve ter no mínimo 3 caracteres." }),
@@ -52,15 +51,23 @@ interface PropsFormDeUsuario {
   initialData?: DadosDoFormulario | null;
   onSave: (data: DadosDoFormulario) => Promise<void>;
   onCancel: () => void;
+  currentUserRole: string | null;
+  // isOwnProfile removido para simplificar
 }
 
 export const FormularioDoUsuario = ({
   initialData,
   onSave,
   onCancel,
+  currentUserRole,
 }: PropsFormDeUsuario) => {
   const isEditing = !!initialData;
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const isGestor = currentUserRole === 'Gestor';
+  
+  // ✅ Verifica se o usuário alvo da edição JÁ É um Gestor
+  const isTargetGestor = initialData?.cargo === 'Gestor';
 
   const form = useForm<DadosDoFormulario>({
     resolver: zodResolver(isEditing ? editUserSchema : createUserSchema),
@@ -177,7 +184,12 @@ export const FormularioDoUsuario = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Cargo</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || ""} disabled={isSubmitting}>
+              <Select 
+                onValueChange={field.onChange} 
+                value={field.value || ""} 
+                // ✅ Bloqueia se: estiver salvando OU não for gestor OU o alvo for um gestor
+                disabled={isSubmitting || !isGestor || isTargetGestor} 
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o cargo" />
@@ -189,6 +201,17 @@ export const FormularioDoUsuario = ({
                   <SelectItem value="Usuário">Usuário</SelectItem>
                 </SelectContent>
               </Select>
+              
+              {!isGestor ? (
+                 <p className="text-[0.8rem] text-muted-foreground mt-1">
+                   Não é possível alterar o cargo sem permissão.
+                 </p>
+              ) : isTargetGestor ? (
+                 <p className="text-[0.8rem] text-muted-foreground mt-1">
+                   Não é permitido alterar o cargo de um Gestor.
+                 </p>
+              ) : null}
+              
               <FormMessage />
             </FormItem>
           )}
