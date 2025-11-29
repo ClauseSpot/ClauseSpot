@@ -56,6 +56,8 @@ export default function HomeLayout({
     performLogout();
   };
 
+  const podeAcessar = userRole === "Gestor" || userRole === "Curador";
+
   if (isCheckingAuth) {
     return (
       <div
@@ -105,7 +107,8 @@ export default function HomeLayout({
               Leis
             </Link>
 
-            {userRole === "Gestor" && (
+            {/* ✅ Link visível se tiver permissão (Gestor ou Curador) */}
+            {podeAcessar && (
               <Link
                 href="/home/gerenciaDeUsuario"
                 className={
@@ -129,8 +132,8 @@ export default function HomeLayout({
         </nav>
 
         <main className="main-content">
-          {pathname === "/home/gerenciaDeUsuario" &&
-          userRole !== "Gestor" ? (
+          {/* ✅ Bloqueio de rota ajustado */}
+          {pathname === "/home/gerenciaDeUsuario" && !podeAcessar ? (
             <div className="text-center p-10">
               <h1 className="text-2xl font-bold text-red-600">
                 Acesso Negado
